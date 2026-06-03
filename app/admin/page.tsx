@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { PortalShell } from "@/components/PortalShell";
 import type { FaqItem, FormFolder, FormItem, FormsData, Guide, MergeSettings } from "@/lib/content";
 
@@ -212,7 +212,7 @@ export default function AdminPage() {
       {section === "forms" ? <FormsEditor forms={forms} setForms={setForms} adminPass={adminPass} /> : null}
       {section === "guides" ? <GuidesEditor guides={guides} setGuides={setGuides} adminPass={adminPass} /> : null}
       {section === "faq" ? <FaqEditor faq={faq} setFaq={setFaq} /> : null}
-      {section === "settings" ? <SettingsEditor settings={settings} setSettings={setSettings} /> : null}
+      {section === "settings" ? <SettingsEditor settings={settings} setSettings={setSettings} adminPass={adminPass} /> : null}
 
       {section !== "dashboard" ? (
         <button className="primaryButton stickySave" type="button" onClick={() => save(section)}>
@@ -425,27 +425,73 @@ function GuidesEditor({ guides, setGuides, adminPass }: { guides: Guide[]; setGu
   );
 }
 
-function FaqEditor({ faq, setFaq }: { faq: FaqItem[]; setFaq: (value: FaqItem[]) => void }) {
+function FaqEditor({ faq, setFaq }: { faq: FaqItem[]; setFaq: Dispatch<SetStateAction<FaqItem[]>> }) {
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
+  const addFaq = () => {
+    const id = `faq-${Date.now()}`;
+    setFaq((current) => [...current, { id, question: "Câu hỏi mới", answer: "" }]);
+    setOpenItems((current) => ({ ...current, [id]: true }));
+  };
+
+  const toggleFaq = (id: string) => {
+    setOpenItems((current) => ({ ...current, [id]: !(current[id] ?? true) }));
+  };
+
   return (
     <section className="adminEditor">
       <h2 className="sectionTitle">Quản lý FAQ</h2>
-      <button className="secondaryButton compactButton" type="button" onClick={() => setFaq([...faq, { id: `faq-${Date.now()}`, question: "Câu hỏi mới", answer: "" }])}>
+      <button className="secondaryButton compactButton" type="button" onClick={addFaq}>
         Thêm câu hỏi
       </button>
-      {faq.map((item, index) => (
-        <div className="editorGroup" key={item.id}>
-          <input value={item.question} onChange={(event) => setFaq(faq.map((entry, i) => (i === index ? { ...entry, question: event.target.value, id: makeId(event.target.value) } : entry)))} placeholder="Câu hỏi" />
-          <textarea value={item.answer} onChange={(event) => setFaq(faq.map((entry, i) => (i === index ? { ...entry, answer: event.target.value } : entry)))} placeholder="Câu trả lời" />
-          <button className="secondaryButton compactButton" type="button" onClick={() => setFaq(faq.filter((_, i) => i !== index))}>
-            Xóa câu hỏi
-          </button>
-        </div>
-      ))}
+      {faq.map((item, index) => {
+        const isOpen = openItems[item.id] ?? true;
+        return (
+          <div className="editorGroup faqEditorItem" key={item.id}>
+            <div className="faqEditorHeader">
+              <input value={item.question} onChange={(event) => setFaq((current) => current.map((entry, i) => (i === index ? { ...entry, question: event.target.value } : entry)))} placeholder="Câu hỏi" />
+              <button className="secondaryButton iconButton" type="button" onClick={() => toggleFaq(item.id)} aria-label={isOpen ? "Ẩn câu trả lời" : "Hiện câu trả lời"}>
+                {isOpen ? "Ẩn" : "Hiện"}
+              </button>
+            </div>
+            {isOpen ? (
+              <>
+                <textarea value={item.answer} onChange={(event) => setFaq((current) => current.map((entry, i) => (i === index ? { ...entry, answer: event.target.value } : entry)))} placeholder="Câu trả lời" />
+                <button className="secondaryButton compactButton" type="button" onClick={() => setFaq((current) => current.filter((_, i) => i !== index))}>
+                  Xóa câu hỏi
+                </button>
+              </>
+            ) : null}
+          </div>
+        );
+      })}
     </section>
   );
 }
 
-function SettingsEditor({ settings, setSettings }: { settings: MergeSettings; setSettings: (value: MergeSettings) => void }) {
+function SettingsEditor({ settings, setSettings, adminPass }: { settings: MergeSettings; setSettings: (value: MergeSettings) => void; adminPass: string }) {
+  const [uploadingSlot, setUploadingSlot] = useState("");
+
+  const uploadThemeImage = async (slot: "bannerImage" | "bottomImage", file?: File | null) => {
+    if (!file) return;
+    setUploadingSlot(slot);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("slot", slot === "bannerImage" ? "banner" : "bottom");
+
+      const response = await fetch("/api/theme/upload", {
+        method: "POST",
+        headers: { "x-admin-pass": adminPass },
+        body: formData
+      });
+      const result = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !result.url) throw new Error(result.error || "Khong the upload anh.");
+      setSettings({ ...settings, [slot]: result.url });
+    } finally {
+      setUploadingSlot("");
+    }
+  };
   return (
     <section className="adminEditor">
       <h2 className="sectionTitle">Cài đặt hệ thống</h2>
@@ -453,6 +499,34 @@ function SettingsEditor({ settings, setSettings }: { settings: MergeSettings; se
         Ghi chú màn ghép ảnh
         <textarea value={settings.mergeNote} onChange={(event) => setSettings({ ...settings, mergeNote: event.target.value })} />
       </label>
+      <div className="editorGroup">
+        <strong>Ảnh banner</strong>
+        {settings.bannerImage ? <img className="themePreview" src={settings.bannerImage} alt="Ảnh banner hiện tại" /> : <div className="fileStatus">Chưa có ảnh banner</div>}
+        <label className="secondaryButton compactButton uploadPdfButton">
+          {uploadingSlot === "bannerImage" ? "Đang upload..." : "Upload ảnh banner"}
+          <input className="fileInput" type="file" accept="image/*" onChange={(event: ChangeEvent<HTMLInputElement>) => uploadThemeImage("bannerImage", event.target.files?.[0])} />
+        </label>
+        <input value={settings.bannerImage || ""} onChange={(event) => setSettings({ ...settings, bannerImage: event.target.value })} placeholder="/uploads/theme/banner.jpg" />
+        {settings.bannerImage ? (
+          <button className="secondaryButton compactButton" type="button" onClick={() => setSettings({ ...settings, bannerImage: "" })}>
+            Xóa ảnh banner
+          </button>
+        ) : null}
+      </div>
+      <div className="editorGroup">
+        <strong>Ảnh bottom</strong>
+        {settings.bottomImage ? <img className="themePreview" src={settings.bottomImage} alt="Ảnh bottom hiện tại" /> : <div className="fileStatus">Chưa có ảnh bottom</div>}
+        <label className="secondaryButton compactButton uploadPdfButton">
+          {uploadingSlot === "bottomImage" ? "Đang upload..." : "Upload ảnh bottom"}
+          <input className="fileInput" type="file" accept="image/*" onChange={(event: ChangeEvent<HTMLInputElement>) => uploadThemeImage("bottomImage", event.target.files?.[0])} />
+        </label>
+        <input value={settings.bottomImage || ""} onChange={(event) => setSettings({ ...settings, bottomImage: event.target.value })} placeholder="/uploads/theme/bottom.jpg" />
+        {settings.bottomImage ? (
+          <button className="secondaryButton compactButton" type="button" onClick={() => setSettings({ ...settings, bottomImage: "" })}>
+            Xóa ảnh bottom
+          </button>
+        ) : null}
+      </div>
       <label className="field">
         Định dạng mặc định
         <select value={settings.defaultFormat} onChange={(event) => setSettings({ ...settings, defaultFormat: event.target.value as "jpeg" | "png" })}>

@@ -3,7 +3,6 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { PortalShell } from "@/components/PortalShell";
 
-type OutputFormat = "jpeg" | "png";
 type UploadKey = "front" | "back" | "zalo";
 
 type UploadItem = {
@@ -21,7 +20,7 @@ type CropBox = {
 const uploadItems: UploadItem[] = [
   { key: "front", label: "Mặt trước CCCD" },
   { key: "back", label: "Mặt sau CCCD" },
-  { key: "zalo", label: "Ảnh thông tin Zalo" }
+  { key: "zalo", label: "Ảnh quét mã QR" }
 ];
 
 const MAX_PROCESS_WIDTH = 1600;
@@ -561,16 +560,15 @@ function createFinalCanvas(frontSource: HTMLCanvasElement, backSource: HTMLCanva
   return canvas;
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, format: OutputFormat) {
-  const mime = format === "jpeg" ? "image/jpeg" : "image/png";
+function canvasToBlob(canvas: HTMLCanvasElement) {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (!blob) reject(new Error("Không thể xuất ảnh."));
         else resolve(blob);
       },
-      mime,
-      format === "jpeg" ? 0.95 : undefined
+      "image/jpeg",
+      0.95
     );
   });
 }
@@ -581,7 +579,6 @@ export default function Page() {
     back: null,
     zalo: null
   });
-  const [format, setFormat] = useState<OutputFormat>("jpeg");
   const [mergeNote, setMergeNote] = useState("Ảnh chỉ xử lý cục bộ, không OCR, không lưu dữ liệu.");
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
@@ -595,9 +592,8 @@ export default function Page() {
   useEffect(() => {
     fetch("/api/content?key=settings")
       .then((response) => response.json())
-      .then((settings: { mergeNote?: string; defaultFormat?: OutputFormat }) => {
+      .then((settings: { mergeNote?: string }) => {
         if (settings.mergeNote) setMergeNote(settings.mergeNote);
-        if (settings.defaultFormat === "jpeg" || settings.defaultFormat === "png") setFormat(settings.defaultFormat);
       })
       .catch(() => undefined);
   }, []);
@@ -626,7 +622,7 @@ export default function Page() {
         formData.append("front", files.front);
         formData.append("back", files.back);
         formData.append("zalo", files.zalo);
-        formData.append("format", format);
+        formData.append("format", "jpeg");
 
         const endpoint = window.location.hostname.endsWith("vercel.app") ? "/api/compose-python" : "/api/compose";
         const response = await fetch(endpoint, {
@@ -647,14 +643,14 @@ export default function Page() {
           processFile(files.zalo, false)
         ]);
         const finalCanvas = createFinalCanvas(front, back, zalo);
-        blob = await canvasToBlob(finalCanvas, format);
+        blob = await canvasToBlob(finalCanvas);
       }
 
       const url = URL.createObjectURL(blob);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
       setResultUrl(url);
       setResultBlob(blob);
-      setDownloadName(`anh_giay_to_hoan_chinh.${format === "jpeg" ? "jpg" : "png"}`);
+      setDownloadName("anh_giay_to_hoan_chinh.jpg");
       setMessage("Đã tạo ảnh hoàn chỉnh.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể xử lý ảnh.");
@@ -720,25 +716,12 @@ export default function Page() {
           </div>
         ))}
 
-        <div className="formatTitle">Định dạng xuất ảnh</div>
-        <div className="radioRow">
-          <label className="radioLabel">
-            <input type="radio" checked={format === "jpeg"} onChange={() => setFormat("jpeg")} />
-            JPG
-          </label>
-          <label className="radioLabel">
-            <input type="radio" checked={format === "png"} onChange={() => setFormat("png")} />
-            PNG
-          </label>
-        </div>
-
-        <button className="primaryButton" type="button" onClick={generateImage} disabled={isProcessing}>
+        <button className="primaryButton mergeCreateButton" type="button" onClick={generateImage} disabled={isProcessing}>
           {isProcessing ? "Đang xử lý..." : "Tạo ảnh hoàn chỉnh"}
         </button>
 
         {error && <div className="error">{error}</div>}
         {message && <div className="success">{message}</div>}
-        {!allSelected && !error && <div className="fileStatus">Chọn đủ 3 ảnh để bắt đầu xử lý.</div>}
       </section>
 
       <section className="card mergeCard">

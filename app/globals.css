@@ -78,6 +78,17 @@ a {
   color: #fff;
 }
 
+.customMediaBand {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.customMediaBand > * {
+  position: relative;
+  z-index: 1;
+}
+
 .homeHeader {
   min-height: 88px;
   padding: 18px 20px 14px;
@@ -600,6 +611,53 @@ a {
   background: #fff;
 }
 
+.formPdfToolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: #fff;
+  color: #303b4f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.formPdfControls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.formPdfFrame {
+  position: relative;
+  width: 100%;
+  min-height: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
+  background: #eef5fb;
+}
+
+.formPdfCanvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+
+.formBackButton {
+  width: 100%;
+  margin-top: 10px;
+}
+
 .actionRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -697,6 +755,20 @@ a {
   padding: 0 13px;
   border-radius: 6px;
   font-size: 12px;
+}
+
+.mergeCard .mergeCreateButton {
+  display: flex;
+  width: fit-content;
+  min-width: 168px;
+  min-height: 40px;
+  margin: 14px auto 0;
+  padding: 0 18px;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 38%),
+    linear-gradient(135deg, #f4c64a, #d4a017);
+  color: #08356f;
+  box-shadow: 0 8px 18px rgba(212, 160, 23, 0.24);
 }
 
 .mergeCard > .fileStatus {
@@ -874,6 +946,127 @@ a {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.faqEditorItem {
+  gap: 8px;
+}
+
+.faqEditorHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.faqEditorHeader input {
+  min-width: 0;
+}
+
+.iconButton {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.iconOnlyButton {
+  min-height: 34px;
+  min-width: 44px;
+  padding: 0;
+}
+
+.actionIconButton {
+  min-height: 42px;
+}
+
+.buttonIcon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+  color: currentColor;
+}
+
+.previousIcon::before,
+.nextIcon::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  width: 11px;
+  height: 11px;
+  border-top: 2px solid currentColor;
+}
+
+.previousIcon::before {
+  left: 7px;
+  border-left: 2px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+.nextIcon::before {
+  right: 7px;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.shareIcon {
+  width: 26px;
+  height: 26px;
+}
+
+.shareIcon::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow:
+    14px -7px 0 currentColor,
+    14px 9px 0 currentColor;
+}
+
+.shareIcon::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 7px;
+  width: 15px;
+  height: 17px;
+  background:
+    linear-gradient(151deg, transparent 0 44%, currentColor 44% 54%, transparent 54% 100%),
+    linear-gradient(31deg, transparent 0 44%, currentColor 44% 54%, transparent 54% 100%);
+}
+
+.downloadArrowIcon {
+  border-bottom: 2px solid currentColor;
+}
+
+.downloadArrowIcon::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 3px;
+  width: 2px;
+  height: 13px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.downloadArrowIcon::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
 }
 
 .uploadPdfButton {
@@ -1066,6 +1259,15 @@ textarea {
 
 .fileInput {
   display: none;
+}
+
+.themePreview {
+  width: 100%;
+  max-height: 118px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
 }
 
 .formatTitle {

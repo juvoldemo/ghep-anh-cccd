@@ -43,6 +43,8 @@ export type FaqItem = {
 export type MergeSettings = {
   mergeNote: string;
   defaultFormat: "jpeg" | "png";
+  bannerImage?: string;
+  bottomImage?: string;
 };
 
 export type ContentKey = "forms" | "guides" | "faq" | "settings";

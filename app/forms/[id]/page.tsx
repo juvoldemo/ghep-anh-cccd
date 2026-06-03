@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { FormPdfViewer } from "@/components/FormPdfViewer";
 import { PortalShell } from "@/components/PortalShell";
 import { getForms } from "@/lib/content";
 
@@ -13,8 +14,6 @@ export default async function FormDetailPage({ params }: FormDetailProps) {
 
   if (!item) notFound();
 
-  const zaloUrl = `https://zalo.me/share?u=${encodeURIComponent(item.file)}`;
-
   return (
     <PortalShell title="Xem mẫu biểu" showBack>
       <section className="pdfViewer">
@@ -24,23 +23,7 @@ export default async function FormDetailPage({ params }: FormDetailProps) {
             <small>{item.size ?? "512 KB"}</small>
           </span>
         </p>
-        <div className="pdfToolbar" aria-hidden="true">
-          <span>1 / 3</span>
-          <span />
-          <span className="toolbarButton">-</span>
-          <span className="toolbarButton">⌕</span>
-          <span className="toolbarButton">↻</span>
-          <span className="toolbarButton">▱</span>
-        </div>
-        <iframe className="pdfPreview" src={item.file} title={item.title} />
-        <div className="actionRow">
-          <a className="secondaryButton" href={zaloUrl} target="_blank" rel="noreferrer">
-            Chia sẻ qua Zalo
-          </a>
-          <a className="downloadButton" href={item.file} download>
-            Tải về
-          </a>
-        </div>
+        <FormPdfViewer pdfUrl={item.file} title={item.title} />
       </section>
     </PortalShell>
   );

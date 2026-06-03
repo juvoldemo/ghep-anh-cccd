@@ -1,4 +1,5 @@
 {
   "mergeNote": "Ảnh chỉ xử lý cục bộ, không OCR, không lưu dữ liệu.",
-  "defaultFormat": "jpeg"
+  "defaultFormat": "jpeg",
+  "bannerImage": "/uploads/theme/banner-1780487089455-79f37010-a1d6-4873-8637-b1bdfb2a17a1.png"
 }

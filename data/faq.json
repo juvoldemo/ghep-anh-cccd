@@ -1,27 +1,22 @@
 [
   {
-    "id": "sai-ngay-sinh",
-    "question": "Sai ngày sinh xử lý như thế nào?",
-    "answer": "Cần thực hiện các bước sau:\n- Bước 1: Kiểm tra hồ sơ gốc.\n- Bước 2: Yêu cầu khách hàng cung cấp giấy tờ hợp lệ.\n- Bước 3: Cập nhật thông tin trên hệ thống.\n- Bước 4: Chạy lại minh họa nếu cần.\n- Bước 5: Gửi thông báo xác nhận thay đổi cho khách hàng."
+    "id": "faq-1780484085794",
+    "question": "Khi nào sử dụng Văn bản xác nhận dữ liệu cá nhân?",
+    "answer": "Văn bản xác nhận dữ liệu cá nhân (XNDLCN) được sử dụng trong các trường hợp sau:\n• Người được bảo hiểm (NĐBH) từ 07 tuổi trở lên.\n• NĐBH từ 07 đến dưới 16 tuổi: cần NĐBH ký và Người đại diện theo pháp luật của NĐBH cùng ký.\n• NĐBH từ 16 đến dưới 18 tuổi: NĐBH tự ký xác nhận.\nLưu ý: Mẫu XNDLCN được sử dụng chung cho hợp đồng đã phát hành và hợp đồng khai thác mới."
   },
   {
-    "id": "khach-hang-trung",
-    "question": "Khách hàng trùng xử lý thế nào?",
-    "answer": "Kiểm tra thông tin định danh, số hợp đồng và lịch sử giao dịch. Nếu đúng là một khách hàng, cập nhật theo quy trình hợp nhất thông tin nội bộ."
+    "id": "faq-1780484258836",
+    "question": "Khai thác hợp đồng mới bị sai giấy tờ tùy thân, địa chỉ hoặc thông tin cá nhân thì xử lý như thế nào?",
+    "answer": "• Kê Giấy đề nghị thay đổi thông tin Giấy yêu cầu bảo hiểm (GYC).\n• Có đầy đủ chữ ký của Bên mua bảo hiểm (BMBH) và Tư vấn viên (TVV).\n• Kiểm tra kỹ nội dung cần điều chỉnh trước khi gửi xử lý để tránh phát sinh bổ sung hồ sơ.\nLưu ý: Chỉ áp dụng cho các trường hợp điều chỉnh thông tin trên GYC trong quá trình khai thác hợp đồng mới."
   },
   {
-    "id": "chay-lai-minh-hoa",
-    "question": "Khi nào cần chạy lại minh họa?",
-    "answer": "Cần chạy lại minh họa khi có thay đổi số phí, quyền lợi, thời hạn, người được bảo hiểm hoặc trước khi gửi hồ sơ phát hành."
+    "id": "faq-1780484273849",
+    "question": "Khai thác hợp đồng mới bị sai nghề nghiệp thì xử lý như thế nào?",
+    "answer": "• Chạy lại minh họa theo nghề nghiệp chính xác của khách hàng.\n• Kê Giấy đề nghị thay đổi thông tin Giấy yêu cầu bảo hiểm (GYC) để cập nhật thông tin nghề nghiệp.\n• Chạy lại báo cáo tư vấn viên (TVV) theo thông tin đã điều chỉnh.\nLưu ý: Việc thay đổi nghề nghiệp có thể ảnh hưởng đến phí bảo hiểm, điều kiện thẩm định hoặc quyền lợi bảo hiểm, cần kiểm tra kỹ trước khi nộp hồ sơ."
   },
   {
-    "id": "thoi-gian-giai-quyet",
-    "question": "Thời gian giải quyết quyền lợi là bao lâu?",
-    "answer": "Thời gian xử lý phụ thuộc vào loại quyền lợi và mức độ đầy đủ của hồ sơ. Cần theo dõi trạng thái trên hệ thống và cập nhật cho khách hàng."
-  },
-  {
-    "id": "ho-so-yeu-cau",
-    "question": "Hồ sơ yêu cầu giải quyết quyền lợi gồm những gì?",
-    "answer": "Thông thường gồm phiếu yêu cầu, giấy tờ định danh, chứng từ liên quan và tài liệu bổ sung theo từng loại quyền lợi."
+    "id": "faq-1780484380311",
+    "question": "Phương thức đóng phí bảo hiểm định danh như thế nào?",
+    "answer": "• Số hợp đồng bảo hiểm\nCú pháp: BVL + Số hợp đồng bảo hiểm\nVí dụ: BVL568336688\n→ Áp dụng để thanh toán các khoản phí đã được hệ thống tạo dữ liệu phải thu, bao gồm: phí định kỳ, phí đóng thêm, phí thiếu/phụ trội hoặc các khoản phát sinh từ thay đổi hợp đồng.\n\n• Số yêu cầu bảo hiểm (YCBH)\nCú pháp: V3BVL + Số yêu cầu bảo hiểm\nVí dụ: V3BVLA25251325\n→ Áp dụng để thanh toán phí bảo hiểm ước tính trong giai đoạn khai thác hợp đồng mới.\n\n• Mã tư vấn viên (TVV)\nCú pháp: V3BVL + Mã tư vấn viên\nVí dụ: V3BVLD100123456\n→ Áp dụng để tất toán công nợ phí bảo hiểm của tư vấn viên."
   }
 ]

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 type PortalShellProps = {
@@ -6,6 +9,11 @@ type PortalShellProps = {
   eyebrow?: string;
   children: ReactNode;
   showBack?: boolean;
+};
+
+type ShellSettings = {
+  bannerImage?: string;
+  bottomImage?: string;
 };
 
 const logoSub = "BẢO VIỆT NHÂN THỌ";
@@ -23,10 +31,22 @@ function BaoVietLogo() {
 }
 
 export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBack }: PortalShellProps) {
+  const [settings, setSettings] = useState<ShellSettings>({});
+
+  useEffect(() => {
+    fetch("/api/content?key=settings")
+      .then((response) => response.json())
+      .then((data: ShellSettings) => setSettings(data))
+      .catch(() => undefined);
+  }, []);
+
+  const bannerStyle = settings.bannerImage ? { backgroundImage: `url("${settings.bannerImage}")` } : undefined;
+  const bottomStyle = settings.bottomImage ? { backgroundImage: `url("${settings.bottomImage}")` } : undefined;
+
   return (
     <main className="page">
       <div className="phoneShell">
-        <header className={title ? "bvHeader compactHeader" : "bvHeader homeHeader"}>
+        <header className={title ? "bvHeader compactHeader customMediaBand" : "bvHeader homeHeader customMediaBand"} style={bannerStyle}>
           {title ? (
             <>
               <Link className="headerIcon backIcon" href="/" aria-label={showBack ? "Trang chủ" : "Trang trước"} />
@@ -34,18 +54,12 @@ export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBac
               <span className="headerSpacer" aria-hidden="true" />
             </>
           ) : (
-            <>
-              <Link className="brandLink" href="/">
-                <BaoVietLogo />
-              </Link>
-              <p className="headerEyebrow">{eyebrow}</p>
-              <span className="headerIcon bellIcon" aria-hidden="true" />
-            </>
+            <span className="mediaPlaceholder" aria-hidden="true" />
           )}
         </header>
         <div className="shellContent">{children}</div>
-        <footer className="bvFooter">
-          <BaoVietLogo />
+        <footer className="bvFooter customMediaBand" style={bottomStyle}>
+          <span className="mediaPlaceholder" aria-hidden="true" />
         </footer>
       </div>
     </main>
