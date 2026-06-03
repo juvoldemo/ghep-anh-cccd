@@ -1,0 +1,27 @@
+[
+  {
+    "id": "sai-ngay-sinh",
+    "question": "Sai ngày sinh xử lý như thế nào?",
+    "answer": "Cần thực hiện các bước sau:\n- Bước 1: Kiểm tra hồ sơ gốc.\n- Bước 2: Yêu cầu khách hàng cung cấp giấy tờ hợp lệ.\n- Bước 3: Cập nhật thông tin trên hệ thống.\n- Bước 4: Chạy lại minh họa nếu cần.\n- Bước 5: Gửi thông báo xác nhận thay đổi cho khách hàng."
+  },
+  {
+    "id": "khach-hang-trung",
+    "question": "Khách hàng trùng xử lý thế nào?",
+    "answer": "Kiểm tra thông tin định danh, số hợp đồng và lịch sử giao dịch. Nếu đúng là một khách hàng, cập nhật theo quy trình hợp nhất thông tin nội bộ."
+  },
+  {
+    "id": "chay-lai-minh-hoa",
+    "question": "Khi nào cần chạy lại minh họa?",
+    "answer": "Cần chạy lại minh họa khi có thay đổi số phí, quyền lợi, thời hạn, người được bảo hiểm hoặc trước khi gửi hồ sơ phát hành."
+  },
+  {
+    "id": "thoi-gian-giai-quyet",
+    "question": "Thời gian giải quyết quyền lợi là bao lâu?",
+    "answer": "Thời gian xử lý phụ thuộc vào loại quyền lợi và mức độ đầy đủ của hồ sơ. Cần theo dõi trạng thái trên hệ thống và cập nhật cho khách hàng."
+  },
+  {
+    "id": "ho-so-yeu-cau",
+    "question": "Hồ sơ yêu cầu giải quyết quyền lợi gồm những gì?",
+    "answer": "Thông thường gồm phiếu yêu cầu, giấy tờ định danh, chứng từ liên quan và tài liệu bổ sung theo từng loại quyền lợi."
+  }
+]

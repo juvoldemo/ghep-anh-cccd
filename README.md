@@ -1,16 +1,28 @@
-# Ghép ảnh giấy tờ tùy thân
+# Cổng nghiệp vụ BAOVIET Life
 
-Ứng dụng Next.js xử lý và ghép 3 ảnh giấy tờ tùy thân trực tiếp trên trình duyệt. Ảnh không được upload lên server.
+Cổng hỗ trợ nghiệp vụ BVNT theo hướng mobile-first. Ứng dụng giữ nguyên chức năng ghép ảnh giấy tờ tùy thân hiện có, đồng thời bổ sung mẫu biểu, hướng dẫn, câu hỏi thường gặp và màn hình quản trị đơn giản dùng dữ liệu JSON cục bộ.
 
 ## Công nghệ
 
 - Next.js App Router
 - React
 - TypeScript
-- Canvas API trên trình duyệt
 - CSS global mobile-first
+- Nội dung JSON cục bộ trong `data/`
+- File PDF tĩnh trong `public/pdfs/`
 
-## Chạy local
+## Tuyến trang
+
+- `/` - màn hình chọn chức năng
+- `/forms` - folder mẫu biểu và danh sách PDF
+- `/forms/[id]` - xem trước PDF, tải về và chia sẻ Zalo
+- `/merge-id` - công cụ ghép 3 ảnh giấy tờ, crop/xoay/xuất ảnh
+- `/guides` - danh mục hướng dẫn
+- `/guides/[id]` - từng bước xử lý và danh sách kiểm tra
+- `/faq` - câu hỏi thường gặp dạng accordion
+- `/admin` - quản trị nội dung đơn giản
+
+## Chạy trên máy
 
 ```bash
 npm install
@@ -23,49 +35,45 @@ Mở:
 http://localhost:3000
 ```
 
-## Cách dùng
+## Quản trị
 
-1. Chọn ảnh mặt trước CCCD.
-2. Chọn ảnh mặt sau CCCD.
-3. Chọn ảnh thông tin Zalo.
-4. Chọn định dạng JPG hoặc PNG.
-5. Bấm **Tạo ảnh hoàn chỉnh**.
-6. Bấm **Tải ảnh về**.
-
-Ứng dụng chỉ hiển thị trạng thái đã chọn ảnh, không hiển thị preview ảnh gốc.
-
-## Bảo mật
-
-- Không OCR.
-- Không lưu dữ liệu.
-- Không gửi ảnh lên server.
-- Toàn bộ xử lý ảnh chạy cục bộ bằng Canvas API trên trình duyệt.
-
-## Deploy lên Vercel bằng GitHub
-
-1. Tạo repository GitHub mới.
-2. Commit toàn bộ project và push lên GitHub:
-
-```bash
-git init
-git add .
-git commit -m "Convert to Next.js image composer"
-git branch -M main
-git remote add origin https://github.com/<username>/<repo>.git
-git push -u origin main
-```
-
-3. Vào https://vercel.com và đăng nhập bằng GitHub.
-4. Chọn **Add New Project**.
-5. Import repository vừa push.
-6. Framework Preset chọn **Next.js**.
-7. Build Command để mặc định:
+API quản trị kiểm tra biến môi trường:
 
 ```text
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+Nếu chưa cấu hình biến môi trường, tài khoản mặc định khi chạy trên máy là `admin` / `admin123`.
+
+Quản trị có thể chỉnh:
+
+- folder mẫu biểu, tiêu đề PDF, đường dẫn PDF và upload PDF
+- danh mục, tiêu đề, tóm tắt, các bước và checklist của hướng dẫn
+- câu hỏi, câu trả lời và thứ tự câu hỏi thường gặp
+- ghi chú và định dạng mặc định của chức năng ghép ảnh
+
+## File nội dung
+
+```text
+data/forms.json
+data/guides.json
+data/faq.json
+data/settings.json
+```
+
+File PDF được phục vụ từ:
+
+```text
+public/pdfs
+```
+
+Phần quản trị hiện tại ghi trực tiếp vào file, phù hợp khi chạy trên máy hoặc mô hình lưu bằng file đơn giản. Trên Vercel, file tải lên hoặc JSON chỉnh trong lúc chạy có thể không tồn tại bền vững giữa các lần triển khai/serverless instance. Khi cần chạy production có quản trị lâu dài, nên chuyển phần lưu trữ sang Vercel Blob, KV, Supabase hoặc một dịch vụ lưu trữ phù hợp.
+
+## Kiểm tra build
+
+```bash
 npm run build
 ```
 
-8. Output Directory để mặc định.
-9. Bấm **Deploy**.
-
-Sau khi deploy xong, Vercel sẽ cung cấp URL public để sử dụng.
+Ứng dụng có thể triển khai lên Vercel như một dự án Next.js tiêu chuẩn.

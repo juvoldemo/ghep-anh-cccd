@@ -14,7 +14,7 @@ const pythonCandidates = process.platform === "win32" ? ["python", "py"] : ["pyt
 async function saveUpload(formData: FormData, key: string, dir: string) {
   const file = formData.get(key);
   if (!(file instanceof File)) {
-    throw new Error(`Missing file: ${key}`);
+    throw new Error(`Thiếu file: ${key}`);
   }
 
   const extension = path.extname(file.name) || ".jpg";
@@ -30,7 +30,7 @@ function runPython(args: string[], cwd: string) {
 
     const tryNext = (index: number) => {
       if (index >= pythonCandidates.length) {
-        reject(lastError ?? new Error("Python is not available."));
+        reject(lastError ?? new Error("Không tìm thấy Python."));
         return;
       }
 
@@ -99,10 +99,7 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Could not process images." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Không thể xử lý ảnh." }, { status: 500 });
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }

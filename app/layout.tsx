@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ghép ảnh giấy tờ tùy thân",
-  description: "Xử lý và ghép ảnh giấy tờ tùy thân trực tiếp trên trình duyệt."
+  title: "Cổng nghiệp vụ BAOVIET Life",
+  description: "Mini portal hỗ trợ nghiệp vụ BVNT trên web và mobile."
 };
 
 export const viewport: Viewport = {
