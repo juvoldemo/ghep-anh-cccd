@@ -606,23 +606,36 @@ export default function Page() {
 
     setIsProcessing(true);
     try {
-      const formData = new FormData();
-      formData.append("front", files.front);
-      formData.append("back", files.back);
-      formData.append("zalo", files.zalo);
-      formData.append("format", format);
+      let blob: Blob;
 
-      const response = await fetch("/api/compose", {
-        method: "POST",
-        body: formData
-      });
+      try {
+        const formData = new FormData();
+        formData.append("front", files.front);
+        formData.append("back", files.back);
+        formData.append("zalo", files.zalo);
+        formData.append("format", format);
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? "Không thể xử lý ảnh.");
+        const response = await fetch("/api/compose", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Server image processor is not available.");
+        }
+
+        blob = await response.blob();
+      } catch (serverError) {
+        console.warn("Falling back to browser image processing:", serverError);
+        const [front, back, zalo] = await Promise.all([
+          processFile(files.front, true),
+          processFile(files.back, true),
+          processFile(files.zalo, false)
+        ]);
+        const finalCanvas = createFinalCanvas(front, back, zalo);
+        blob = await canvasToBlob(finalCanvas, format);
       }
 
-      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
       setResultUrl(url);
