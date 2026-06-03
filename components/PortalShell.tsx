@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 
 type PortalShellProps = {
   title?: string;
-  eyebrow?: string;
   children: ReactNode;
   showBack?: boolean;
 };
@@ -16,21 +15,7 @@ type ShellSettings = {
   bottomImage?: string;
 };
 
-const logoSub = "BẢO VIỆT NHÂN THỌ";
-const defaultEyebrow = "CÙNG HỖ TRỢ NGHIỆP VỤ";
-
-function BaoVietLogo() {
-  return (
-    <span className="bvLogo" aria-label="BAOVIET Life">
-      <span className="bvLogoMain">BAOVIET</span>
-      <span className="bvLogoOrb" aria-hidden="true" />
-      <span className="bvLogoLife">Life</span>
-      <span className="bvLogoSub">{logoSub}</span>
-    </span>
-  );
-}
-
-export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBack }: PortalShellProps) {
+export function PortalShell({ title, children, showBack }: PortalShellProps) {
   const [settings, setSettings] = useState<ShellSettings>({});
   const isHome = !title;
 
@@ -67,8 +52,4 @@ export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBac
       </div>
     </main>
   );
-}
-
-export function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="emptyState">{children}</div>;
 }

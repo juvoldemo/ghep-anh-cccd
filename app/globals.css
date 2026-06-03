@@ -113,64 +113,6 @@ a {
   font-weight: 800;
 }
 
-.headerEyebrow {
-  margin: 7px 0 0;
-  color: #fff;
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.brandLink {
-  display: inline-flex;
-  text-decoration: none;
-}
-
-.bvLogo {
-  display: inline-grid;
-  grid-template-columns: auto 22px auto;
-  align-items: center;
-  justify-content: start;
-  column-gap: 3px;
-  color: #fff;
-}
-
-.bvLogoMain,
-.bvLogoLife {
-  font-size: 21px;
-  line-height: 1;
-  font-weight: 900;
-}
-
-.bvLogoLife {
-  color: #ffd343;
-}
-
-.bvLogoOrb {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 35%),
-    radial-gradient(circle at 48% 50%, #ffdc70 0, #d49b25 58%, #8e5d12 100%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-}
-
-.bvLogoSub {
-  grid-column: 1 / -1;
-  margin-top: 5px;
-  color: #fff;
-  font-size: 8px;
-  line-height: 1;
-  font-weight: 800;
-  text-align: center;
-}
-
-.homeHeader .bvLogoSub {
-  text-align: left;
-}
-
 .headerIcon,
 .headerSpacer {
   width: 34px;
@@ -190,32 +132,6 @@ a {
   transform: rotate(45deg);
 }
 
-.bellIcon {
-  position: absolute;
-  top: 22px;
-  right: 20px;
-}
-
-.bellIcon::before {
-  content: "";
-  width: 15px;
-  height: 17px;
-  border: 2px solid #fff;
-  border-bottom: 0;
-  border-radius: 10px 10px 5px 5px;
-}
-
-.bellIcon::after {
-  content: "";
-  position: absolute;
-  bottom: 6px;
-  width: 16px;
-  height: 2px;
-  border-radius: 2px;
-  background: #fff;
-  box-shadow: 0 5px 0 -3px #fff;
-}
-
 .bvFooter {
   display: flex;
   justify-content: center;
@@ -230,29 +146,6 @@ a {
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-}
-
-.bvFooter .bvLogo {
-  transform: scale(0.92);
-  transform-origin: center;
-}
-
-.bottomIcon {
-  position: relative;
-  width: 23px;
-  height: 23px;
-  display: inline-block;
-}
-
-.bottomIcon.home::before {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 8px;
-  width: 15px;
-  height: 12px;
-  background: currentColor;
-  clip-path: polygon(0 35%, 50% 0, 100% 35%, 100% 100%, 62% 100%, 62% 62%, 38% 62%, 38% 100%, 0 100%);
 }
 
 .folderGlyph::before {
@@ -567,6 +460,8 @@ a {
   width: 22px;
   height: 22px;
   color: var(--blue);
+  border-bottom: 2px solid currentColor;
+  border-radius: 0 0 1px 1px;
 }
 
 .downloadGlyph::before {
@@ -591,11 +486,6 @@ a {
   transform: rotate(45deg);
 }
 
-.downloadGlyph {
-  border-bottom: 2px solid currentColor;
-  border-radius: 0 0 1px 1px;
-}
-
 .contentBlock,
 .card {
   padding: 14px;
@@ -607,35 +497,6 @@ a {
 
 .pdfViewer {
   padding: 0;
-}
-
-.pdfToolbar {
-  display: grid;
-  grid-template-columns: 58px 1fr 32px 32px 32px 32px;
-  align-items: center;
-  height: 34px;
-  border: 1px solid var(--line);
-  border-bottom: 0;
-  border-radius: 8px 8px 0 0;
-  background: #fff;
-  color: #303b4f;
-  font-size: 12px;
-}
-
-.toolbarButton {
-  height: 100%;
-  display: grid;
-  place-items: center;
-  border-left: 1px solid var(--line);
-}
-
-.pdfPreview {
-  display: block;
-  width: 100%;
-  height: 310px;
-  border: 1px solid var(--line);
-  border-radius: 0 0 8px 8px;
-  background: #fff;
 }
 
 .formPdfToolbar {
@@ -882,11 +743,6 @@ a {
   line-height: 1.45;
   font-weight: 600;
   white-space: pre-line;
-}
-
-.accordionPanel ul {
-  margin: 6px 0 0;
-  padding-left: 17px;
 }
 
 .adminProfile {

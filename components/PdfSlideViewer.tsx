@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getPdfDownloadUrl, getPdfFileName } from "@/lib/pdfDownload";
+import { sharePdfFile } from "@/lib/sharePdf";
 
 type PdfSlideViewerProps = {
   pdfUrl: string;
@@ -117,19 +118,7 @@ export function PdfSlideViewer({ pdfUrl, title, initialPageCount = 0 }: PdfSlide
   };
 
   const sharePdf = async () => {
-    const response = await fetch(downloadUrl);
-    if (!response.ok) return;
-
-    const blob = await response.blob();
-    const file = new File([blob], pdfFileName, { type: "application/pdf" });
-    const shareData: ShareData = { title, files: [file] };
-
-    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
-      await navigator.share(shareData);
-      return;
-    }
-
-    window.location.href = downloadUrl;
+    await sharePdfFile(downloadUrl, pdfFileName, title).catch(() => undefined);
   };
 
   return (

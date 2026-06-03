@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getPdfDownloadUrl, getPdfFileName } from "@/lib/pdfDownload";
+import { sharePdfFile } from "@/lib/sharePdf";
 
 type FormPdfViewerProps = {
   pdfUrl: string;
@@ -100,21 +101,11 @@ export function FormPdfViewer({ pdfUrl, title }: FormPdfViewerProps) {
     setShareStatus("");
 
     try {
-      const response = await fetch(downloadUrl);
-      if (!response.ok) throw new Error("Cannot load PDF for sharing.");
-
-      const blob = await response.blob();
-      const file = new File([blob], pdfFileName, { type: "application/pdf" });
-      const shareData: ShareData = { title, files: [file] };
-
-      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
-        await navigator.share(shareData);
-        return;
+      const result = await sharePdfFile(downloadUrl, pdfFileName, title);
+      if (result === "opened") {
+        setShareStatus("Da mo file PDF de tai ve");
+        window.setTimeout(() => setShareStatus(""), 1800);
       }
-
-      window.location.href = downloadUrl;
-      setShareStatus("Da mo file PDF de tai ve");
-      window.setTimeout(() => setShareStatus(""), 1800);
     } catch {
       setShareStatus("");
     }
