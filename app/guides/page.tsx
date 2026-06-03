@@ -15,7 +15,7 @@ export default async function GuidesPage() {
           const isYoutube = guide.type === "youtube";
 
           return (
-            <Link className="listItem" href={`/guides/${guide.id}`} key={guide.id}>
+            <Link className="listItem guideListItem" href={`/guides/${guide.id}`} key={guide.id}>
               <span className={`featureIcon ${isYoutube ? "playGlyph" : "bookGlyph"}`} />
               <span className="listText">
                 <strong>{guide.title || "Hướng dẫn chưa có tiêu đề"}</strong>

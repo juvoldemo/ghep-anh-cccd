@@ -394,6 +394,42 @@ a {
   object-fit: contain;
 }
 
+.guideListItem {
+  min-height: 82px;
+  grid-template-columns: 62px minmax(0, 1fr) 18px;
+}
+
+.guideListItem .featureIcon {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #f3f8ff;
+}
+
+.guideListItem .bookGlyph::before {
+  left: 13px;
+  top: 14px;
+  width: 30px;
+  height: 28px;
+}
+
+.guideListItem .bookGlyph::after {
+  left: 18px;
+  top: 20px;
+  width: 8px;
+  box-shadow: 18px 0 0 currentColor, 0 7px 0 currentColor, 18px 7px 0 currentColor;
+}
+
+.guideListItem .playGlyph::before {
+  inset: 10px;
+}
+
+.guideListItem .playGlyph::after {
+  left: 23px;
+  top: 19px;
+}
+
 .featureIcon.gold,
 .featureIcon.gold.idGlyph {
   color: #dca000;
@@ -442,7 +478,19 @@ a {
 .homeLead {
   display: flex;
   justify-content: center;
-  padding: 14px 0 18px;
+  padding: 16px 0 20px;
+}
+
+.homeGreeting {
+  margin: 0;
+  color: #003b7a;
+  font-family: "Segoe Script", "Brush Script MT", "Segoe UI", "Roboto", Arial, Helvetica, sans-serif;
+  font-size: 28px;
+  font-style: italic;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow: 0 3px 10px rgba(0, 91, 172, 0.14);
 }
 
 .homeLeadIcon {
@@ -450,6 +498,69 @@ a {
   height: min(8.5vw, 37.5px);
   display: block;
   object-fit: contain;
+}
+
+.homeAssistantBottom {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 0;
+}
+
+.homeZaloAssistant {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.homeZaloAssistantLink {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 8px rgba(214, 160, 24, 0.28));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.homeZaloAssistantLink:hover {
+  filter: drop-shadow(0 0 14px rgba(214, 160, 24, 0.58));
+  transform: scale(1.1);
+}
+
+.homeZaloAssistantLink::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #003b7a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.homeZaloAssistantLink:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.zaloRedirectNotice {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  color: #7a5a00;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
 }
 
 .subHeader {

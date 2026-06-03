@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PortalShell } from "@/components/PortalShell";
+import { HomeZaloAssistantButton } from "@/components/HomeZaloAssistantButton";
 
 const features = [
   {
@@ -38,7 +39,7 @@ export default function HomePage() {
   return (
     <PortalShell>
       <section className="homeLead">
-        <img className="homeLeadIcon" src="/icons/home-globe.png" alt="" aria-hidden="true" />
+        <p className="homeGreeting">Xin chào</p>
       </section>
 
       <nav className="featureGrid compact" aria-label="Chức năng chính">
@@ -54,6 +55,10 @@ export default function HomePage() {
           </Link>
         ))}
       </nav>
+
+      <div className="homeAssistantBottom">
+        <HomeZaloAssistantButton />
+      </div>
     </PortalShell>
   );
 }
