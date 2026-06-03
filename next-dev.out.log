@@ -112,3 +112,42 @@
  GET /guides/huong-dan-1780473751148 200 in 41ms
  GET /guides/huong-dan-1780473751148 200 in 157ms
  GET / 200 in 28ms
+ ✓ Compiled /forms in 488ms (636 modules)
+ GET /forms 200 in 679ms
+ GET /forms?folder=phat-hanh-hop-dong 200 in 24ms
+ GET / 200 in 37ms
+ GET /admin 200 in 28ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2s (981 modules)
+ GET /admin 500 in 2438ms
+ GET /admin 200 in 97ms
+ GET /admin 200 in 19ms
+ GET /admin 200 in 21ms
+ GET /admin 200 in 147ms
+ ✓ Compiled in 423ms (981 modules)
+ ✓ Compiled in 665ms (981 modules)
+ ✓ Compiled in 256ms (981 modules)
+ ✓ Compiled in 176ms (981 modules)
+ ✓ Compiled in 186ms (981 modules)
+ ✓ Compiled in 180ms (981 modules)
+ ✓ Compiled /api/content in 268ms (610 modules)
+ POST /api/content 401 in 375ms
+ POST /api/content 200 in 8ms
+ GET /api/content?key=forms 200 in 13ms
+ GET /api/content?key=faq 200 in 21ms
+ GET /api/content?key=guides 200 in 23ms
+ GET /api/content?key=settings 200 in 23ms
+ PUT /api/content?key=forms 200 in 15ms
+ ✓ Compiled in 471ms (904 modules)
+ ✓ Compiled in 289ms (904 modules)
+ ✓ Compiled in 219ms (885 modules)
+ ✓ Compiled in 190ms (885 modules)
+ ✓ Compiled in 191ms (885 modules)
+ ✓ Compiled in 216ms (885 modules)
+ GET /admin 200 in 255ms
+ ✓ Compiled /api/content in 283ms (515 modules)
+ POST /api/content 200 in 384ms
+ GET /api/content?key=forms 200 in 11ms
+ GET /api/content?key=guides 200 in 23ms
+ GET /api/content?key=faq 200 in 25ms
+ GET /api/content?key=settings 200 in 26ms

@@ -188,7 +188,7 @@ export default function AdminPage() {
         </>
       ) : null}
 
-      {section === "forms" ? <FormsEditor forms={forms} setForms={setForms} /> : null}
+      {section === "forms" ? <FormsEditor forms={forms} setForms={setForms} adminPass={adminPass} /> : null}
       {section === "guides" ? <GuidesEditor guides={guides} setGuides={setGuides} adminPass={adminPass} /> : null}
       {section === "faq" ? <FaqEditor faq={faq} setFaq={setFaq} /> : null}
       {section === "settings" ? <SettingsEditor settings={settings} setSettings={setSettings} /> : null}
@@ -203,28 +203,89 @@ export default function AdminPage() {
   );
 }
 
-function FormsEditor({ forms, setForms }: { forms: FormsData; setForms: (value: FormsData) => void }) {
+function FormsEditor({ forms, setForms, adminPass }: { forms: FormsData; setForms: (value: FormsData) => void; adminPass: string }) {
+  const [uploadingId, setUploadingId] = useState("");
+
   const updateFolder = (folderIndex: number, folder: FormFolder) => {
     setForms({ folders: forms.folders.map((item, index) => (index === folderIndex ? folder : item)) });
+  };
+
+  const updateFolderTitle = (folderIndex: number, title: string) => {
+    const folder = forms.folders[folderIndex];
+    updateFolder(folderIndex, { ...folder, title, id: makeId(title) });
+  };
+
+  const uploadPdf = async (folderIndex: number, itemIndex: number, file?: File | null) => {
+    if (!file) return;
+    const item = forms.folders[folderIndex].items[itemIndex];
+    setUploadingId(item.id);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/forms/upload", {
+        method: "POST",
+        headers: { "x-admin-pass": adminPass },
+        body: formData
+      });
+      const result = (await response.json()) as { file?: string; size?: string };
+      if (!response.ok || !result.file) throw new Error("Không thể upload PDF.");
+
+      const folder = forms.folders[folderIndex];
+      const newItems = folder.items.map((entry, index) => {
+        if (index === itemIndex) {
+          return {
+            ...entry,
+            title: file.name.endsWith(".pdf") ? file.name : `${file.name}.pdf`,
+            file: result.file!,
+            size: result.size || "512 KB"
+          };
+        }
+        return entry;
+      });
+      updateFolder(folderIndex, { ...folder, items: newItems });
+    } finally {
+      setUploadingId("");
+    }
   };
 
   return (
     <section className="adminEditor">
       <h2 className="sectionTitle">Quản lý mẫu biểu</h2>
-      <button className="secondaryButton compactButton" type="button" onClick={() => setForms({ folders: [...forms.folders, { id: `danh-muc-${Date.now()}`, title: "Danh mục mới", items: [newFormItem()] }] })}>
+      <button className="secondaryButton compactButton" type="button" onClick={() => setForms({ folders: [...forms.folders, { id: "phat-hanh-hop-dong", title: "Phát hành hợp đồng", items: [newFormItem()] }] })}>
         Thêm danh mục
       </button>
       {forms.folders.map((folder, folderIndex) => (
         <div className="editorGroup" key={folder.id}>
           <label className="field">
             Tên danh mục
-            <input value={folder.title} onChange={(event) => updateFolder(folderIndex, { ...folder, title: event.target.value, id: makeId(event.target.value) })} />
+            <select
+              value={folder.title}
+              onChange={(event) => updateFolderTitle(folderIndex, event.target.value)}
+            >
+              <option value="">Chọn danh mục</option>
+              <option value="Phát hành hợp đồng">Phát hành hợp đồng</option>
+              <option value="Quản lý hợp đồng">Quản lý hợp đồng</option>
+              <option value="Bổ sung sức khỏe">Bổ sung sức khỏe</option>
+            </select>
           </label>
           {folder.items.map((item, itemIndex) => (
             <div className="editorMiniCard" key={item.id}>
               <input value={item.title} onChange={(event) => updateFolder(folderIndex, { ...folder, items: folder.items.map((entry, index) => (index === itemIndex ? { ...entry, title: event.target.value, id: makeId(event.target.value) } : entry)) })} placeholder="Tên file" />
-              <input value={item.file} onChange={(event) => updateFolder(folderIndex, { ...folder, items: folder.items.map((entry, index) => (index === itemIndex ? { ...entry, file: event.target.value } : entry)) })} placeholder="/pdfs/mau.pdf" />
-              <input value={item.size ?? ""} onChange={(event) => updateFolder(folderIndex, { ...folder, items: folder.items.map((entry, index) => (index === itemIndex ? { ...entry, size: event.target.value } : entry)) })} placeholder="512 KB" />
+              <label className="secondaryButton compactButton uploadPdfButton">
+                {uploadingId === item.id ? "Đang upload..." : item.file ? "Upload lại PDF" : "Upload PDF"}
+                <input className="fileInput" type="file" accept="application/pdf,.pdf" onChange={(event: ChangeEvent<HTMLInputElement>) => uploadPdf(folderIndex, itemIndex, event.target.files?.[0])} />
+              </label>
+              {item.file ? (
+                <>
+                  <div className="fileStatus">Đã upload: {item.size || "512 KB"}</div>
+                  <input value={item.file} onChange={(event) => updateFolder(folderIndex, { ...folder, items: folder.items.map((entry, index) => (index === itemIndex ? { ...entry, file: event.target.value } : entry)) })} placeholder="/pdfs/mau.pdf" />
+                </>
+              ) : (
+                <>
+                  <div className="fileStatus">Chưa có PDF</div>
+                  <input value={item.file} onChange={(event) => updateFolder(folderIndex, { ...folder, items: folder.items.map((entry, index) => (index === itemIndex ? { ...entry, file: event.target.value } : entry)) })} placeholder="/pdfs/mau.pdf" />
+                </>
+              )}
               <button className="secondaryButton compactButton" type="button" onClick={() => updateFolder(folderIndex, { ...folder, items: folder.items.filter((_, index) => index !== itemIndex) })}>
                 Xóa mẫu
               </button>

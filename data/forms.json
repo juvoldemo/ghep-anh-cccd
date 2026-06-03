@@ -1,56 +1,14 @@
 {
   "folders": [
     {
-      "id": "phat-hanh-hop-dong",
+      "id": "phat-hanh-hop-ong",
       "title": "Phát hành hợp đồng",
       "items": [
         {
-          "id": "mau-01-de-nghi-bhnt-pdf",
-          "title": "Mẫu 01 - Đề nghị BHNT.pdf",
-          "file": "/pdfs/mau-01.pdf",
-          "size": "512 KB"
-        },
-        {
-          "id": "mau-02-giay-yeu-cau-bh-pdf",
-          "title": "Mẫu 02 - Giấy yêu cầu BH.pdf",
-          "file": "/pdfs/mau-02.pdf",
-          "size": "450 KB"
-        },
-        {
-          "id": "mau-03-thoa-thuan-dong-phi-pdf",
-          "title": "Mẫu 03 - Thỏa thuận đóng phí.pdf",
+          "id": "mau-1780475461805",
+          "title": "Xác nhận dữ liệu cá nhân.pdf",
           "file": "/pdfs/xac-nhan-du-lieu-ca-nhan.pdf",
-          "size": "620 KB"
-        },
-        {
-          "id": "mau-04-thong-bao-bh-pdf",
-          "title": "Mẫu 04 - Thông báo BH.pdf",
-          "file": "/pdfs/thay-doi-thong-tin.pdf",
-          "size": "380 KB"
-        },
-        {
-          "id": "mau-05-giay-uy-quyen-pdf",
-          "title": "Mẫu 05 - Giấy ủy quyền.pdf",
-          "file": "/pdfs/giai-quyet-quyen-loi.pdf",
-          "size": "420 KB"
-        }
-      ]
-    },
-    {
-      "id": "quan-ly-hop-dong",
-      "title": "Quản lý hợp đồng",
-      "items": [
-        {
-          "id": "thay-doi-thong-tin-khach-hang-pdf",
-          "title": "Thay đổi thông tin khách hàng.pdf",
-          "file": "/pdfs/thay-doi-thong-tin.pdf",
-          "size": "506 KB"
-        },
-        {
-          "id": "giai-quyet-quyen-loi-bao-hiem-pdf",
-          "title": "Giải quyết quyền lợi bảo hiểm.pdf",
-          "file": "/pdfs/giai-quyet-quyen-loi.pdf",
-          "size": "488 KB"
+          "size": "351 KB"
         }
       ]
     }
