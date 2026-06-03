@@ -582,6 +582,7 @@ export default function Page() {
   });
   const [format, setFormat] = useState<OutputFormat>("jpeg");
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [resultBlob, setResultBlob] = useState<Blob | null>(null);
   const [downloadName, setDownloadName] = useState("anh_giay_to_hoan_chinh.jpg");
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -640,6 +641,7 @@ export default function Page() {
       const url = URL.createObjectURL(blob);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
       setResultUrl(url);
+      setResultBlob(blob);
       setDownloadName(`anh_giay_to_hoan_chinh.${format === "jpeg" ? "jpg" : "png"}`);
       setMessage("Đã tạo ảnh hoàn chỉnh.");
     } catch (err) {
@@ -647,6 +649,33 @@ export default function Page() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const saveResultImage = async () => {
+    if (!resultUrl || !resultBlob) return;
+
+    const file = new File([resultBlob], downloadName, {
+      type: resultBlob.type || (downloadName.endsWith(".png") ? "image/png" : "image/jpeg")
+    });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "Ảnh giấy tờ hoàn chỉnh"
+        });
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+
+    const link = document.createElement("a");
+    link.href = resultUrl;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   return (
@@ -725,9 +754,9 @@ export default function Page() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="resultImage" src={resultUrl} alt="Ảnh kết quả" />
               </div>
-              <a className="downloadButton" href={resultUrl} download={downloadName}>
-                Tải ảnh về
-              </a>
+              <button className="downloadButton" type="button" onClick={saveResultImage}>
+                Lưu ảnh / Tải ảnh về
+              </button>
             </>
           )}
         </section>
