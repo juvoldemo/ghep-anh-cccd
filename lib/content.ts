@@ -66,13 +66,17 @@ function hasBlobStore() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+function isVercel() {
+  return Boolean(process.env.VERCEL);
+}
+
 async function streamToText(stream: ReadableStream<Uint8Array>) {
   return new Response(stream).text();
 }
 
 export async function readContent<T>(key: ContentKey): Promise<T> {
   if (hasBlobStore()) {
-    const blob = await get(blobPath(key), { access: "private", useCache: false });
+    const blob = await get(blobPath(key), { access: "public" });
     if (blob?.statusCode === 200) {
       return JSON.parse(await streamToText(blob.stream)) as T;
     }
@@ -87,12 +91,16 @@ export async function writeContent(key: ContentKey, value: unknown) {
 
   if (hasBlobStore()) {
     await put(blobPath(key), content, {
-      access: "private",
+      access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json"
     });
     return;
+  }
+
+  if (isVercel()) {
+    throw new Error("Chua cau hinh Vercel Blob. Hay tao Blob Store va them BLOB_READ_WRITE_TOKEN trong Environment Variables.");
   }
 
   await writeFile(dataPath(key), content, "utf8");

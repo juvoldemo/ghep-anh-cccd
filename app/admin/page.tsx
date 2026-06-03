@@ -138,6 +138,11 @@ export default function AdminPage() {
       headers: jsonHeaders,
       body: JSON.stringify(value)
     });
+    if (!response.ok) {
+      const result = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(result?.error || "Khong the luu. Vui long kiem tra cau hinh luu tru tren Vercel.");
+      return;
+    }
     setMessage(response.ok ? "Đã lưu thay đổi." : "Không thể lưu. Vui lòng kiểm tra mật khẩu admin.");
   };
 

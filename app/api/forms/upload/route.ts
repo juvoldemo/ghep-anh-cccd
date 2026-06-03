@@ -21,6 +21,10 @@ function safeFileName(name: string) {
   );
 }
 
+function isVercel() {
+  return Boolean(process.env.VERCEL);
+}
+
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return NextResponse.json({ error: "Không có quyền truy cập." }, { status: 401 });
 
@@ -41,6 +45,13 @@ export async function POST(request: NextRequest) {
       contentType: "application/pdf"
     });
     return NextResponse.json({ file: blob.url, size });
+  }
+
+  if (isVercel()) {
+    return NextResponse.json(
+      { error: "Chua cau hinh Vercel Blob. Hay tao Blob Store va them BLOB_READ_WRITE_TOKEN trong Environment Variables." },
+      { status: 500 }
+    );
   }
 
   const uploadDir = path.join(process.cwd(), "public", "pdfs");
