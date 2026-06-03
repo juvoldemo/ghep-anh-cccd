@@ -10,6 +10,13 @@ type UploadItem = {
   label: string;
 };
 
+type CropBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 const uploadItems: UploadItem[] = [
   { key: "front", label: "Mặt trước CCCD" },
   { key: "back", label: "Mặt sau CCCD" },
@@ -144,8 +151,220 @@ function findContentBox(canvas: HTMLCanvasElement, preferCard: boolean) {
   return { x: minX, y: minY, width: boxWidth, height: boxHeight };
 }
 
+function expandBoxToCardShape(box: CropBox, canvasWidth: number, canvasHeight: number): CropBox {
+  const targetRatio = 1.585;
+  let x = box.x;
+  let y = box.y;
+  let width = box.width;
+  let height = box.height;
+  const currentRatio = width / Math.max(1, height);
+
+  if (currentRatio > targetRatio) {
+    const nextHeight = Math.round(width / targetRatio);
+    y -= Math.round((nextHeight - height) / 2);
+    height = nextHeight;
+  } else {
+    const nextWidth = Math.round(height * targetRatio);
+    x -= Math.round((nextWidth - width) / 2);
+    width = nextWidth;
+  }
+
+  const padX = Math.round(width * 0.025);
+  const padY = Math.round(height * 0.025);
+  x -= padX;
+  y -= padY;
+  width += padX * 2;
+  height += padY * 2;
+
+  const x1 = Math.max(0, x);
+  const y1 = Math.max(0, y);
+  const x2 = Math.min(canvasWidth, x + width);
+  const y2 = Math.min(canvasHeight, y + height);
+  return { x: x1, y: y1, width: Math.max(1, x2 - x1), height: Math.max(1, y2 - y1) };
+}
+
+function findCardBoxByColorCluster(canvas: HTMLCanvasElement) {
+  const imageData = getCanvasImageData(canvas);
+  const { data, width, height } = imageData;
+  const background = estimateBorderColor(imageData);
+  let minX = width;
+  let minY = height;
+  let maxX = 0;
+  let maxY = 0;
+  let count = 0;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const i = (y * width + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const sat = saturation(r, g, b);
+      const brightness = (r + g + b) / 3;
+      const dist = colorDistance([r, g, b], background);
+      const coolOrNeutralCard =
+        brightness > 55 &&
+        dist > 16 &&
+        g > 58 &&
+        b > 54 &&
+        (b >= r - 14 || g > r + 6 || (b >= r - 28 && Math.abs(r - g) < 24 && Math.abs(g - b) < 30));
+      const darkInk = brightness < 105 && dist > 34 && Math.max(r, g, b) - Math.min(r, g, b) < 95;
+      const redStamp = brightness > 45 && sat > 0.2 && dist > 24 && r > 130 && r > g + 30 && r > b + 30;
+      const yellowMark =
+        brightness > 65 && sat > 0.22 && dist > 30 && r > 145 && g > 105 && b < 105 && Math.abs(r - g) < 85;
+
+      if (coolOrNeutralCard || darkInk || redStamp || yellowMark) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+        count += 1;
+      }
+    }
+  }
+
+  const imageArea = width * height;
+  if (count < imageArea * 0.003) return null;
+
+  const rawBox = { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+  const rawRatio = Math.max(rawBox.width, rawBox.height) / Math.max(1, Math.min(rawBox.width, rawBox.height));
+  const rawAreaRatio = (rawBox.width * rawBox.height) / imageArea;
+  if (rawRatio < 1.05 || rawRatio > 3.4 || rawAreaRatio > 0.75) return null;
+
+  const box = expandBoxToCardShape(rawBox, width, height);
+  const ratio = Math.max(box.width, box.height) / Math.max(1, Math.min(box.width, box.height));
+  const areaRatio = (box.width * box.height) / imageArea;
+  if (ratio < 1.15 || ratio > 2.45 || areaRatio > 0.82) return null;
+  return box;
+}
+
+function findCardBoxByComponents(canvas: HTMLCanvasElement) {
+  const imageData = getCanvasImageData(canvas);
+  const { data, width, height } = imageData;
+  const background = estimateBorderColor(imageData);
+  const mask = new Uint8Array(width * height);
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const i = (y * width + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const sat = saturation(r, g, b);
+      const dist = colorDistance([r, g, b], background);
+      const brightness = (r + g + b) / 3;
+      const coolOrNeutralCard =
+        brightness > 55 &&
+        dist > 16 &&
+        g > 58 &&
+        b > 54 &&
+        (b >= r - 14 || g > r + 6 || (b >= r - 28 && Math.abs(r - g) < 24 && Math.abs(g - b) < 30));
+      const darkInk = brightness < 105 && dist > 34 && Math.max(r, g, b) - Math.min(r, g, b) < 95;
+      const redYellowStamp =
+        sat > 0.2 &&
+        dist > 24 &&
+        ((r > 130 && r > g + 30 && r > b + 30) || (r > 145 && g > 105 && b < 105 && Math.abs(r - g) < 85));
+
+      if (coolOrNeutralCard || darkInk || redYellowStamp) {
+        mask[y * width + x] = 1;
+      }
+    }
+  }
+
+  const visited = new Uint8Array(width * height);
+  const imageArea = width * height;
+  const candidates: Array<{ score: number; x: number; y: number; width: number; height: number }> = [];
+  const queue = new Int32Array(imageArea);
+
+  for (let start = 0; start < imageArea; start += 1) {
+    if (!mask[start] || visited[start]) continue;
+
+    let head = 0;
+    let tail = 0;
+    let count = 0;
+    let minX = width;
+    let minY = height;
+    let maxX = 0;
+    let maxY = 0;
+    visited[start] = 1;
+    queue[tail] = start;
+    tail += 1;
+
+    while (head < tail) {
+      const index = queue[head];
+      head += 1;
+      count += 1;
+      const x = index % width;
+      const y = Math.floor(index / width);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+
+      const neighbors = [index - 1, index + 1, index - width, index + width];
+      for (const next of neighbors) {
+        if (next < 0 || next >= imageArea || visited[next] || !mask[next]) continue;
+        if ((next === index - 1 && x === 0) || (next === index + 1 && x === width - 1)) continue;
+        visited[next] = 1;
+        queue[tail] = next;
+        tail += 1;
+      }
+    }
+
+    const boxWidth = maxX - minX + 1;
+    const boxHeight = maxY - minY + 1;
+    const boxArea = boxWidth * boxHeight;
+    const fillRatio = count / Math.max(1, boxArea);
+    const imageRatio = boxArea / imageArea;
+    const aspectRatio = Math.max(boxWidth, boxHeight) / Math.max(1, Math.min(boxWidth, boxHeight));
+
+    if (
+      count < imageArea * 0.002 ||
+      imageRatio < 0.012 ||
+      imageRatio > 0.72 ||
+      boxWidth < 90 ||
+      boxHeight < 55 ||
+      aspectRatio < 1.18 ||
+      aspectRatio > 2.35 ||
+      fillRatio < 0.08
+    ) {
+      continue;
+    }
+
+    const aspectScore = 1 - Math.min(Math.abs(aspectRatio - 1.58) / 0.9, 1);
+    const areaScore = Math.min(imageRatio / 0.22, 1);
+    const fillScore = Math.min(fillRatio / 0.35, 1);
+    const pad = Math.max(3, Math.round(Math.min(width, height) * 0.006));
+    const box = expandBoxToCardShape(
+      {
+        x: minX,
+        y: minY,
+        width: boxWidth,
+        height: boxHeight
+      },
+      width,
+      height
+    );
+    candidates.push({
+      score: aspectScore * 0.45 + areaScore * 0.35 + fillScore * 0.2,
+      x: Math.max(0, box.x - pad),
+      y: Math.max(0, box.y - pad),
+      width: Math.min(width, box.x + box.width + pad) - Math.max(0, box.x - pad),
+      height: Math.min(height, box.y + box.height + pad) - Math.max(0, box.y - pad)
+    });
+  }
+
+  if (!candidates.length) return null;
+  return candidates.sort((a, b) => b.score - a.score)[0];
+}
+
 function cropCanvas(canvas: HTMLCanvasElement, preferCard: boolean) {
-  const box = findContentBox(canvas, preferCard);
+  const fallbackBox = preferCard ? findContentBox(canvas, preferCard) : null;
+  const canUseFallback =
+    fallbackBox !== null && (fallbackBox.width * fallbackBox.height) / (canvas.width * canvas.height) < 0.62;
+  const box = preferCard
+    ? findCardBoxByColorCluster(canvas) ?? findCardBoxByComponents(canvas) ?? (canUseFallback ? fallbackBox : null)
+    : findContentBox(canvas, preferCard);
   if (!box) return canvas;
 
   const cropped = document.createElement("canvas");
@@ -154,7 +373,90 @@ function cropCanvas(canvas: HTMLCanvasElement, preferCard: boolean) {
   const ctx = cropped.getContext("2d");
   if (!ctx) throw new Error("Trình duyệt không hỗ trợ Canvas.");
   ctx.drawImage(canvas, box.x, box.y, box.width, box.height, 0, 0, box.width, box.height);
-  return cropped;
+  return preferCard ? trimOuterCardBackground(cropped) : cropped;
+}
+
+function trimOuterCardBackground(canvas: HTMLCanvasElement) {
+  const imageData = getCanvasImageData(canvas);
+  const { data, width, height } = imageData;
+  const background = estimateBorderColor(imageData);
+  const isDifferentFromTable = (x: number, y: number) => {
+    const i = (y * width + x) * 4;
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const sat = saturation(r, g, b);
+    const dist = colorDistance([r, g, b], background);
+    const brightness = (r + g + b) / 3;
+    const coolPaper = brightness > 50 && g > 55 && b > 52 && (b >= r - 32 || g > r + 4);
+    const darkOrPrinted = brightness < 120 && dist > 26;
+    return (dist > 16 && coolPaper) || (sat > 0.11 && dist > 20) || darkOrPrinted;
+  };
+
+  const columnHits = (x: number) => {
+    let hits = 0;
+    for (let y = 0; y < height; y += 1) {
+      if (isDifferentFromTable(x, y)) hits += 1;
+    }
+    return hits;
+  };
+
+  const rowHits = (y: number) => {
+    let hits = 0;
+    for (let x = 0; x < width; x += 1) {
+      if (isDifferentFromTable(x, y)) hits += 1;
+    }
+    return hits;
+  };
+
+  const columnThreshold = Math.max(4, Math.round(height * 0.28));
+  const rowThreshold = Math.max(4, Math.round(width * 0.28));
+  const hasColumnEdge = (x: number) => {
+    const from = Math.max(0, x - 1);
+    const to = Math.min(width - 1, x + 1);
+    let total = 0;
+    for (let i = from; i <= to; i += 1) total += columnHits(i);
+    return total / (to - from + 1) >= columnThreshold;
+  };
+  const hasRowEdge = (y: number) => {
+    const from = Math.max(0, y - 1);
+    const to = Math.min(height - 1, y + 1);
+    let total = 0;
+    for (let i = from; i <= to; i += 1) total += rowHits(i);
+    return total / (to - from + 1) >= rowThreshold;
+  };
+
+  let left = 0;
+  let right = width - 1;
+  let top = 0;
+  let bottom = height - 1;
+
+  while (left < right && !hasColumnEdge(left)) left += 1;
+  while (right > left && !hasColumnEdge(right)) right -= 1;
+  while (top < bottom && !hasRowEdge(top)) top += 1;
+  while (bottom > top && !hasRowEdge(bottom)) bottom -= 1;
+
+  const pad = Math.max(1, Math.round(Math.min(width, height) * 0.004));
+  left = Math.max(0, left - pad);
+  top = Math.max(0, top - pad);
+  right = Math.min(width - 1, right + pad);
+  bottom = Math.min(height - 1, bottom + pad);
+
+  const nextWidth = right - left + 1;
+  const nextHeight = bottom - top + 1;
+  const removedArea = 1 - (nextWidth * nextHeight) / (width * height);
+  const nextRatio = Math.max(nextWidth, nextHeight) / Math.max(1, Math.min(nextWidth, nextHeight));
+  if (removedArea < 0.015 || nextWidth < 80 || nextHeight < 50 || nextRatio < 1.15 || nextRatio > 2.45) {
+    return canvas;
+  }
+
+  const trimmed = document.createElement("canvas");
+  trimmed.width = nextWidth;
+  trimmed.height = nextHeight;
+  const ctx = trimmed.getContext("2d");
+  if (!ctx) throw new Error("Tr矛nh duy峄噒 kh么ng h峄?tr峄?Canvas.");
+  ctx.drawImage(canvas, left, top, nextWidth, nextHeight, 0, 0, nextWidth, nextHeight);
+  return trimmed;
 }
 
 function looksUpsideDown(canvas: HTMLCanvasElement) {
@@ -304,13 +606,23 @@ export default function Page() {
 
     setIsProcessing(true);
     try {
-      const [front, back, zalo] = await Promise.all([
-        processFile(files.front, true),
-        processFile(files.back, true),
-        processFile(files.zalo, false)
-      ]);
-      const finalCanvas = createFinalCanvas(front, back, zalo);
-      const blob = await canvasToBlob(finalCanvas, format);
+      const formData = new FormData();
+      formData.append("front", files.front);
+      formData.append("back", files.back);
+      formData.append("zalo", files.zalo);
+      formData.append("format", format);
+
+      const response = await fetch("/api/compose", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "Không thể xử lý ảnh.");
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
       setResultUrl(url);
