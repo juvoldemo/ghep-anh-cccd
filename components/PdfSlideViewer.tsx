@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getPdfDownloadUrl, getPdfFileName } from "@/lib/pdfDownload";
-import { sharePdfFile } from "@/lib/sharePdf";
 
 type PdfSlideViewerProps = {
   pdfUrl: string;
@@ -117,10 +116,6 @@ export function PdfSlideViewer({ pdfUrl, title, initialPageCount = 0 }: PdfSlide
     window.setTimeout(() => setCopied(false), 1600);
   };
 
-  const sharePdf = async () => {
-    await sharePdfFile(downloadUrl, pdfFileName, title).catch(() => undefined);
-  };
-
   return (
     <section className="pdfSlideViewer">
       <div className="slideMeta">
@@ -154,20 +149,17 @@ export function PdfSlideViewer({ pdfUrl, title, initialPageCount = 0 }: PdfSlide
         <button className="secondaryButton compactButton" type="button" onClick={nextPage} disabled={!pageCount || page >= pageCount}>
           Sau
         </button>
-        <button className="secondaryButton compactButton" type="button" onClick={openFullscreen}>
-          Toàn màn hình
-        </button>
       </div>
 
       <div className="slideActions">
         <a className="downloadButton compactButton" href={downloadUrl} download={pdfFileName}>
           Tải PDF gốc
         </a>
-        <button className="secondaryButton compactButton" type="button" onClick={() => void sharePdf()}>
-          Chia sẻ Zalo
-        </button>
         <button className="secondaryButton compactButton" type="button" onClick={copyLink}>
           {copied ? "Đã copy" : "Copy link"}
+        </button>
+        <button className="secondaryButton compactButton" type="button" onClick={openFullscreen}>
+          Toàn màn hình
         </button>
       </div>
     </section>

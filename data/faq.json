@@ -2,26 +2,26 @@
   {
     "id": "faq-1780484085794",
     "question": "Khi nào sử dụng Văn bản xác nhận dữ liệu cá nhân?",
-    "answer": "Văn bản xác nhận dữ liệu cá nhân (XNDLCN) được sử dụng trong các trường hợp sau:\n• Người được bảo hiểm (NĐBH) từ 07 tuổi trở lên.\n• NĐBH từ 07 đến dưới 16 tuổi: cần NĐBH ký và Người đại diện theo pháp luật của NĐBH cùng ký.\n• NĐBH từ 16 đến dưới 18 tuổi: NĐBH tự ký xác nhận.\nLưu ý: Mẫu XNDLCN được sử dụng chung cho hợp đồng đã phát hành và hợp đồng khai thác mới."
+    "answer": "\nVăn bản xác nhận dữ liệu cá nhân (XNDLCN) được sử dụng trong các trường hợp sau:\n• Người được bảo hiểm (NĐBH) từ 07 tuổi trở lên.\n• NĐBH từ 07 đến dưới 16 tuổi: cần NĐBH ký và Người đại diện theo pháp luật của NĐBH cùng ký.\n• NĐBH từ 16 đến dưới 18 tuổi: NĐBH tự ký xác nhận.\nLưu ý: Mẫu XNDLCN được sử dụng chung cho hợp đồng đã phát hành và hợp đồng khai thác mới."
   },
   {
     "id": "faq-1780484258836",
     "question": "Khai thác hợp đồng mới bị sai giấy tờ tùy thân, địa chỉ hoặc thông tin cá nhân thì xử lý như thế nào?",
-    "answer": "• Kê Giấy đề nghị thay đổi thông tin Giấy yêu cầu bảo hiểm (GYC).\n• Có đầy đủ chữ ký của Bên mua bảo hiểm (BMBH) và Tư vấn viên (TVV).\n• Kiểm tra kỹ nội dung cần điều chỉnh trước khi gửi xử lý để tránh phát sinh bổ sung hồ sơ.\nLưu ý: Chỉ áp dụng cho các trường hợp điều chỉnh thông tin trên GYC trong quá trình khai thác hợp đồng mới."
+    "answer": "\n• Kê Giấy đề nghị thay đổi thông tin Giấy yêu cầu bảo hiểm (GYC).\n• Có đầy đủ chữ ký của Bên mua bảo hiểm (BMBH) và Tư vấn viên (TVV).\n• Kiểm tra kỹ nội dung cần điều chỉnh trước khi gửi xử lý để tránh phát sinh bổ sung hồ sơ.\nLưu ý: Chỉ áp dụng cho các trường hợp điều chỉnh thông tin trên GYC trong quá trình khai thác hợp đồng mới."
   },
   {
     "id": "faq-1780484273849",
     "question": "Khai thác hợp đồng mới bị sai nghề nghiệp thì xử lý như thế nào?",
-    "answer": "• Chạy lại minh họa theo nghề nghiệp chính xác của khách hàng.\n• Kê Giấy đề nghị thay đổi thông tin Giấy yêu cầu bảo hiểm (GYC) để cập nhật thông tin nghề nghiệp.\n• Chạy lại báo cáo tư vấn viên (TVV) theo thông tin đã điều chỉnh.\nLưu ý: Việc thay đổi nghề nghiệp có thể ảnh hưởng đến phí bảo hiểm, điều kiện thẩm định hoặc quyền lợi bảo hiểm, cần kiểm tra kỹ trước khi nộp hồ sơ."
+    "answer": "\n• Chạy lại minh họa theo nghề nghiệp chính xác của khách hàng.\n• Kê Giấy đề nghị thay đổi thông tin Giấy yêu cầu bảo hiểm (GYC) để cập nhật thông tin nghề nghiệp.\n• Chạy lại báo cáo tư vấn viên (TVV) theo thông tin đã điều chỉnh.\nLưu ý: Việc thay đổi nghề nghiệp có thể ảnh hưởng đến phí bảo hiểm, điều kiện thẩm định hoặc quyền lợi bảo hiểm, cần kiểm tra kỹ trước khi nộp hồ sơ."
   },
   {
     "id": "faq-1780484380311",
     "question": "Phương thức đóng phí bảo hiểm định danh như thế nào?",
-    "answer": "• Số hợp đồng bảo hiểm\nCú pháp: BVL + Số hợp đồng bảo hiểm\nVí dụ: BVL568336688\n→ Áp dụng để thanh toán các khoản phí đã được hệ thống tạo dữ liệu phải thu, bao gồm: phí định kỳ, phí đóng thêm, phí thiếu/phụ trội hoặc các khoản phát sinh từ thay đổi hợp đồng.\n\n• Số yêu cầu bảo hiểm (YCBH)\nCú pháp: V3BVL + Số yêu cầu bảo hiểm\nVí dụ: V3BVLA25251325\n→ Áp dụng để thanh toán phí bảo hiểm ước tính trong giai đoạn khai thác hợp đồng mới.\n\n• Mã tư vấn viên (TVV)\nCú pháp: V3BVL + Mã tư vấn viên\nVí dụ: V3BVLD100123456\n→ Áp dụng để tất toán công nợ phí bảo hiểm của tư vấn viên."
+    "answer": "\n• Số hợp đồng bảo hiểm\nCú pháp: BVL + Số hợp đồng bảo hiểm\nVí dụ: BVL568336688\n→ Áp dụng để thanh toán các khoản phí đã được hệ thống tạo dữ liệu phải thu, bao gồm: phí định kỳ, phí đóng thêm, phí thiếu/phụ trội hoặc các khoản phát sinh từ thay đổi hợp đồng.\n\n• Số yêu cầu bảo hiểm (YCBH)\nCú pháp: V3BVL + Số yêu cầu bảo hiểm\nVí dụ: V3BVLA25251325\n→ Áp dụng để thanh toán phí bảo hiểm ước tính trong giai đoạn khai thác hợp đồng mới.\n\n• Mã tư vấn viên (TVV)\nCú pháp: V3BVL + Mã tư vấn viên\nVí dụ: V3BVLD100123456\n→ Áp dụng để tất toán công nợ phí bảo hiểm của tư vấn viên."
   },
   {
     "id": "faq-1780493490270",
     "question": "Khôi phục hiệu lực hợp đồng cần giấy tờ gì ?",
-    "answer": "• Giấy đề nghị thay đổi điều kiện hợp đồng\n• Tờ khai sức khỏe\n• Giấy tờ tùy thân của Bên mua bảo hiểm (BMBH) và Người được bảo hiểm (NĐBH)"
+    "answer": "\n• Giấy đề nghị thay đổi điều kiện hợp đồng\n• Tờ khai sức khỏe\n• Giấy tờ tùy thân của Bên mua bảo hiểm (BMBH) và Người được bảo hiểm (NĐBH)"
   }
 ]

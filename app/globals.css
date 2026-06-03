@@ -327,6 +327,23 @@ a {
   text-decoration: none;
 }
 
+.featureCard {
+  min-height: 92px;
+  grid-template-columns: 72px 1fr 18px;
+  gap: 14px;
+  padding: 10px 14px;
+  border-color: #d6e8ff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0, 59, 122, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.featureCard:hover {
+  border-color: #b9dcff;
+  box-shadow: 0 12px 28px rgba(0, 59, 122, 0.12);
+  transform: translateY(-2px);
+}
+
 .featureCard::after,
 .listItem::after {
   content: "";
@@ -336,6 +353,10 @@ a {
   border-right: 2px solid var(--text);
   transform: rotate(45deg);
   justify-self: center;
+}
+
+.featureCard::after {
+  border-color: #003b7a;
 }
 
 .featureIcon,
@@ -356,6 +377,21 @@ a {
 .adminIcon {
   border-radius: 10px;
   background: #eef6ff;
+}
+
+.featureIcon {
+  width: 72px;
+  min-width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: #f3f8ff;
+}
+
+.featureIcon img {
+  width: 56px;
+  height: 56px;
+  display: block;
+  object-fit: contain;
 }
 
 .featureIcon.gold,
@@ -404,7 +440,16 @@ a {
 }
 
 .homeLead {
-  padding: 16px 0 4px;
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 18px;
+}
+
+.homeLeadIcon {
+  width: min(8.5vw, 37.5px);
+  height: min(8.5vw, 37.5px);
+  display: block;
+  object-fit: contain;
 }
 
 .subHeader {
@@ -735,6 +780,12 @@ a {
   font-weight: 800;
 }
 
+.accordionItem.isOpen .accordionButton {
+  background: #eef7ff;
+  color: #003f92;
+  border-bottom: 1px solid #cce8ff;
+}
+
 .accordionPanel {
   margin: 0;
   padding: 0 12px 14px;
@@ -1050,7 +1101,12 @@ a {
   text-align: center;
 }
 
-.slideControls,
+.slideControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .slideActions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

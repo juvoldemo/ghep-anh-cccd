@@ -4,33 +4,31 @@ import { PortalShell } from "@/components/PortalShell";
 const features = [
   {
     href: "/forms",
-    iconClass: "folderGlyph",
+    iconSrc: "/icons/mau-bieu.png",
     title: "Mẫu biểu",
     text: "Kho mẫu biểu nghiệp vụ"
   },
   {
     href: "/merge-id",
-    iconClass: "idGlyph",
-    tone: "gold",
+    iconSrc: "/icons/ghep-anh-giay-to.png",
     title: "Ghép ảnh giấy tờ",
     text: "Ghép ảnh giấy tờ tùy thân"
   },
   {
     href: "/guides",
-    iconClass: "bookGlyph",
+    iconSrc: "/icons/huong-dan.png",
     title: "Hướng dẫn",
     text: "Hướng dẫn nghiệp vụ"
   },
   {
     href: "/faq",
-    iconClass: "faqGlyph",
+    iconSrc: "/icons/faq.png",
     title: "Câu hỏi thường gặp",
     text: "Giải đáp các thắc mắc"
   },
   {
     href: "/admin",
-    iconClass: "gearGlyph",
-    tone: "muted",
+    iconSrc: "/icons/admin.png",
     title: "Admin",
     text: "Quản trị hệ thống"
   }
@@ -40,13 +38,15 @@ export default function HomePage() {
   return (
     <PortalShell>
       <section className="homeLead">
-        <h1 className="title">Chọn chức năng</h1>
+        <img className="homeLeadIcon" src="/icons/home-globe.png" alt="" aria-hidden="true" />
       </section>
 
       <nav className="featureGrid compact" aria-label="Chức năng chính">
         {features.map((feature) => (
           <Link className="featureCard" href={feature.href} key={feature.href}>
-            <span className={`featureIcon ${feature.iconClass} ${feature.tone ?? ""}`} />
+            <span className="featureIcon">
+              <img src={feature.iconSrc} alt="" />
+            </span>
             <span className="featureText">
               <strong>{feature.title}</strong>
               <span>{feature.text}</span>

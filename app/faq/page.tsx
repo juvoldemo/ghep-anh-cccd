@@ -25,7 +25,7 @@ export default function FaqPage() {
         {items.map((item) => {
           const isOpen = item.id === openId;
           return (
-            <section className="accordionItem" key={item.id}>
+            <section className={`accordionItem ${isOpen ? "isOpen" : ""}`} key={item.id}>
               <button className="accordionButton" type="button" onClick={() => setOpenId(isOpen ? null : item.id)}>
                 <span>{item.question}</span>
                 <span>{isOpen ? "⌃" : "⌄"}</span>
