@@ -5,26 +5,26 @@ const features = [
   {
     href: "/forms",
     iconClass: "folderGlyph",
-    title: "1. Mẫu biểu",
+    title: "Mẫu biểu",
     text: "Kho mẫu biểu nghiệp vụ"
   },
   {
     href: "/merge-id",
     iconClass: "idGlyph",
     tone: "gold",
-    title: "2. Ghép ảnh giấy tờ",
+    title: "Ghép ảnh giấy tờ",
     text: "Ghép ảnh giấy tờ tùy thân"
   },
   {
     href: "/guides",
     iconClass: "bookGlyph",
-    title: "3. Hướng dẫn",
+    title: "Hướng dẫn",
     text: "Hướng dẫn nghiệp vụ"
   },
   {
     href: "/faq",
     iconClass: "faqGlyph",
-    title: "4. Câu hỏi thường gặp",
+    title: "Câu hỏi thường gặp",
     text: "Giải đáp các thắc mắc"
   },
   {

@@ -11,19 +11,20 @@ export default async function GuidesPage() {
     <PortalShell title="Hướng dẫn" showBack>
       <h2 className="sectionTitle">Danh sách hướng dẫn</h2>
       <div className="stack">
-        {guides.map((guide) => (
-          <Link className="listItem" href={`/guides/${guide.id}`} key={guide.id}>
-            <span className="featureIcon bookGlyph" />
-            <span className="listText">
-              <strong>{guide.title || "Hướng dẫn chưa có tiêu đề"}</strong>
-              <small>
-                {guide.category}
-                {guide.pageCount ? ` • ${guide.pageCount} trang` : ""}
-              </small>
-              {guide.description || guide.summary ? <small>{guide.description || guide.summary}</small> : null}
-            </span>
-          </Link>
-        ))}
+        {guides.map((guide) => {
+          const isYoutube = guide.type === "youtube";
+
+          return (
+            <Link className="listItem" href={`/guides/${guide.id}`} key={guide.id}>
+              <span className={`featureIcon ${isYoutube ? "playGlyph" : "bookGlyph"}`} />
+              <span className="listText">
+                <strong>{guide.title || "Hướng dẫn chưa có tiêu đề"}</strong>
+                <small>{isYoutube ? "Video YouTube" : `Hướng dẫn${guide.pageCount ? ` · ${guide.pageCount} trang` : ""}`}</small>
+                {guide.description || guide.summary ? <small>{guide.description || guide.summary}</small> : null}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </PortalShell>
   );

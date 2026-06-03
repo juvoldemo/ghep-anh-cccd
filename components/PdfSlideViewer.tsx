@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getPdfDownloadUrl, getPdfFileName } from "@/lib/pdfDownload";
 
 type PdfSlideViewerProps = {
   pdfUrl: string;
@@ -18,6 +19,8 @@ export function PdfSlideViewer({ pdfUrl, title, initialPageCount = 0 }: PdfSlide
   const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [renderTick, setRenderTick] = useState(0);
+  const downloadUrl = getPdfDownloadUrl(pdfUrl);
+  const pdfFileName = getPdfFileName(pdfUrl) ?? "download.pdf";
 
   useEffect(() => {
     let cancelled = false;
@@ -113,7 +116,21 @@ export function PdfSlideViewer({ pdfUrl, title, initialPageCount = 0 }: PdfSlide
     window.setTimeout(() => setCopied(false), 1600);
   };
 
-  const zaloUrl = `https://zalo.me/share?u=${encodeURIComponent(typeof window === "undefined" ? pdfUrl : window.location.href)}`;
+  const sharePdf = async () => {
+    const response = await fetch(downloadUrl);
+    if (!response.ok) return;
+
+    const blob = await response.blob();
+    const file = new File([blob], pdfFileName, { type: "application/pdf" });
+    const shareData: ShareData = { title, files: [file] };
+
+    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+      await navigator.share(shareData);
+      return;
+    }
+
+    window.location.href = downloadUrl;
+  };
 
   return (
     <section className="pdfSlideViewer">
@@ -154,12 +171,12 @@ export function PdfSlideViewer({ pdfUrl, title, initialPageCount = 0 }: PdfSlide
       </div>
 
       <div className="slideActions">
-        <a className="downloadButton compactButton" href={pdfUrl} download>
+        <a className="downloadButton compactButton" href={downloadUrl} download={pdfFileName}>
           Tải PDF gốc
         </a>
-        <a className="secondaryButton compactButton" href={zaloUrl} target="_blank" rel="noreferrer">
+        <button className="secondaryButton compactButton" type="button" onClick={() => void sharePdf()}>
           Chia sẻ Zalo
-        </a>
+        </button>
         <button className="secondaryButton compactButton" type="button" onClick={copyLink}>
           {copied ? "Đã copy" : "Copy link"}
         </button>

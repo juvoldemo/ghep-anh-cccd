@@ -5,20 +5,7 @@ import { PortalShell } from "@/components/PortalShell";
 import type { FaqItem } from "@/lib/content";
 
 function renderAnswer(answer: string) {
-  const [intro, ...bullets] = answer.split("\n").filter(Boolean);
-
-  if (!bullets.length) return <p className="accordionPanel">{answer}</p>;
-
-  return (
-    <div className="accordionPanel">
-      {intro}
-      <ul>
-        {bullets.map((line) => (
-          <li key={line}>{line.replace(/^- /, "")}</li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <p className="accordionPanel">{answer}</p>;
 }
 
 export default function FaqPage() {

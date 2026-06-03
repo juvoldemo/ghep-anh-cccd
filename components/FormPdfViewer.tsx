@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getPdfDownloadUrl, getPdfFileName } from "@/lib/pdfDownload";
 
 type FormPdfViewerProps = {
   pdfUrl: string;
@@ -18,6 +19,8 @@ export function FormPdfViewer({ pdfUrl, title }: FormPdfViewerProps) {
   const [status, setStatus] = useState("Dang tai PDF...");
   const [renderTick, setRenderTick] = useState(0);
   const [shareStatus, setShareStatus] = useState("");
+  const downloadUrl = getPdfDownloadUrl(pdfUrl);
+  const pdfFileName = getPdfFileName(pdfUrl) ?? "download.pdf";
 
   useEffect(() => {
     let cancelled = false;
@@ -94,21 +97,23 @@ export function FormPdfViewer({ pdfUrl, title }: FormPdfViewerProps) {
   const nextPage = () => setPage((current) => Math.min(pageCount || current, current + 1));
 
   const sharePdf = async () => {
-    const url = new URL(pdfUrl, window.location.origin).toString();
     setShareStatus("");
 
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title,
-          text: title,
-          url
-        });
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error("Cannot load PDF for sharing.");
+
+      const blob = await response.blob();
+      const file = new File([blob], pdfFileName, { type: "application/pdf" });
+      const shareData: ShareData = { title, files: [file] };
+
+      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        await navigator.share(shareData);
         return;
       }
 
-      await navigator.clipboard.writeText(url);
-      setShareStatus("Da copy link chia se");
+      window.location.href = downloadUrl;
+      setShareStatus("Da mo file PDF de tai ve");
       window.setTimeout(() => setShareStatus(""), 1800);
     } catch {
       setShareStatus("");
@@ -145,7 +150,7 @@ export function FormPdfViewer({ pdfUrl, title }: FormPdfViewerProps) {
         <button className="secondaryButton iconOnlyButton actionIconButton" type="button" onClick={() => void sharePdf()} aria-label="Chia sẻ">
           <span className="buttonIcon shareIcon" aria-hidden="true" />
         </button>
-        <a className="downloadButton iconOnlyButton actionIconButton" href={pdfUrl} download aria-label="Tải về">
+        <a className="downloadButton iconOnlyButton actionIconButton" href={downloadUrl} download={pdfFileName} aria-label="Tải về">
           <span className="buttonIcon downloadArrowIcon" aria-hidden="true" />
         </a>
       </div>

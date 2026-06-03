@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PortalShell } from "@/components/PortalShell";
 import { PdfSlideViewer } from "@/components/PdfSlideViewer";
+import { YoutubeGuideViewer } from "@/components/YoutubeGuideViewer";
 import { getGuides } from "@/lib/content";
 
 type GuideDetailProps = {
@@ -15,17 +16,22 @@ export default async function GuideDetailPage({ params }: GuideDetailProps) {
 
   if (!guide) notFound();
 
+  const isYoutube = guide.type === "youtube";
+  const description = guide.description || guide.summary;
+
   return (
     <PortalShell title="Hướng dẫn" showBack>
       <section className="guideDetailHeader">
         <h2 className="sectionTitle">{guide.title || "Hướng dẫn chưa có tiêu đề"}</h2>
-        {guide.description || guide.summary ? <p className="summary">{guide.description || guide.summary}</p> : null}
+        {description ? <p className="summary">{description}</p> : null}
         <Link className="guideBackLink" href="/guides">
           Quay lại danh sách hướng dẫn
         </Link>
       </section>
 
-      {guide.pdfUrl ? (
+      {isYoutube && guide.youtubeId ? (
+        <YoutubeGuideViewer title={guide.title || "Video hướng dẫn"} description={description} youtubeId={guide.youtubeId} youtubeUrl={guide.youtubeUrl} />
+      ) : guide.pdfUrl ? (
         <PdfSlideViewer pdfUrl={guide.pdfUrl} title={guide.title || "Hướng dẫn"} initialPageCount={guide.pageCount} />
       ) : (
         <div className="stack">

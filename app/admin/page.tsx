@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChangeEvent, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { PortalShell } from "@/components/PortalShell";
 import type { FaqItem, FormFolder, FormItem, FormsData, Guide, MergeSettings } from "@/lib/content";
+import { extractYouTubeId } from "@/lib/youtube";
 
 type AdminSection = "dashboard" | "forms" | "guides" | "faq" | "settings";
 type ContentKey = Exclude<AdminSection, "dashboard">;
@@ -44,8 +45,11 @@ function newGuide(order: number): Guide {
     title: "",
     description: "",
     summary: "",
+    type: "pdf",
     pdfUrl: "",
     pageCount: 0,
+    youtubeUrl: "",
+    youtubeId: "",
     isActive: true,
     order,
     createdAt: today()
@@ -131,6 +135,13 @@ export default function AdminPage() {
     if (!adminPass) {
       setMessage("Vui lòng đăng nhập lại để lưu thay đổi.");
       return;
+    }
+    if (key === "guides") {
+      const invalidYoutubeGuide = guides.find((guide) => guide.type === "youtube" && (!guide.youtubeUrl || !extractYouTubeId(guide.youtubeUrl)));
+      if (invalidYoutubeGuide) {
+        setMessage(`Link YouTube không hợp lệ: ${invalidYoutubeGuide.title || "Hướng dẫn chưa có tiêu đề"}`);
+        return;
+      }
     }
     const value = key === "forms" ? forms : key === "guides" ? guides : key === "faq" ? faq : settings;
     const response = await fetch(`/api/content?key=${key}`, {
@@ -328,9 +339,33 @@ function FormsEditor({ forms, setForms, adminPass }: { forms: FormsData; setForm
 
 function GuidesEditor({ guides, setGuides, adminPass }: { guides: Guide[]; setGuides: (value: Guide[]) => void; adminPass: string }) {
   const [uploadingId, setUploadingId] = useState("");
+  const [collapsedGuides, setCollapsedGuides] = useState<Record<string, boolean>>({});
 
   const updateGuide = (index: number, guide: Guide) => {
     setGuides(guides.map((item, i) => (i === index ? guide : item)));
+  };
+
+  const setGuideType = (index: number, guide: Guide, type: "pdf" | "youtube") => {
+    updateGuide(index, {
+      ...guide,
+      type,
+      pdfUrl: type === "pdf" ? guide.pdfUrl : "",
+      pageCount: type === "pdf" ? guide.pageCount : 0,
+      youtubeUrl: type === "youtube" ? guide.youtubeUrl : "",
+      youtubeId: type === "youtube" ? guide.youtubeId : ""
+    });
+  };
+
+  const updateYoutubeUrl = (index: number, guide: Guide, youtubeUrl: string) => {
+    const youtubeId = extractYouTubeId(youtubeUrl);
+    updateGuide(index, {
+      ...guide,
+      type: "youtube",
+      youtubeUrl,
+      youtubeId: youtubeId ?? "",
+      pdfUrl: "",
+      pageCount: 0
+    });
   };
 
   const uploadPdf = async (index: number, file?: File | null) => {
@@ -350,18 +385,18 @@ function GuidesEditor({ guides, setGuides, adminPass }: { guides: Guide[]; setGu
         body: formData
       });
       const result = (await response.json()) as { pdfUrl?: string };
-      if (!response.ok || !result.pdfUrl) throw new Error("Không thể upload PDF.");
+      if (!response.ok || !result.pdfUrl) throw new Error("Khong the upload PDF.");
 
-      const title = guide.title || file.name.replace(/\.pdf$/i, "");
       updateGuide(index, {
         ...guide,
-        title,
-        category: "Hướng dẫn",
-        description: "",
-        summary: "",
+        title: guide.title || file.name.replace(/\.pdf$/i, ""),
+        category: guide.category || "Huong dan",
+        type: "pdf",
         pdfUrl: result.pdfUrl,
         pageCount,
-        isActive: true,
+        youtubeUrl: "",
+        youtubeId: "",
+        isActive: guide.isActive !== false,
         order: guide.order ?? index + 1,
         createdAt: guide.createdAt || today()
       });
@@ -372,9 +407,9 @@ function GuidesEditor({ guides, setGuides, adminPass }: { guides: Guide[]; setGu
 
   return (
     <section className="adminEditor">
-      <h2 className="sectionTitle">Quản lý hướng dẫn</h2>
+      <h2 className="sectionTitle">Quan ly huong dan</h2>
       <button className="secondaryButton compactButton" type="button" onClick={() => setGuides([...guides, newGuide((guides.length || 0) + 1)])}>
-        Thêm hướng dẫn
+        Them huong dan
       </button>
 
       {guides
@@ -382,40 +417,93 @@ function GuidesEditor({ guides, setGuides, adminPass }: { guides: Guide[]; setGu
         .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
         .map((guide) => {
           const index = guides.findIndex((item) => item.id === guide.id);
+          const guideType = guide.type ?? (guide.youtubeId ? "youtube" : "pdf");
+          const isActive = guide.isActive !== false;
+          const isCollapsed = collapsedGuides[guide.id] ?? false;
+          const guideMeta = `${guideType === "youtube" ? "YouTube" : `${guide.pageCount || 0} trang`}${isActive ? "" : " · Dang an"}`;
+          const youtubeInvalid = guideType === "youtube" && Boolean(guide.youtubeUrl) && !guide.youtubeId;
+          const canPreview = guideType === "youtube" ? Boolean(guide.youtubeId) : Boolean(guide.pdfUrl);
+
           return (
             <div className="editorGroup guideSimpleEditor" key={guide.id}>
               <div className="guideAdminHeader">
-                <strong>{guide.title || "Hướng dẫn mới"}</strong>
-                <span>{guide.pageCount || 0} trang</span>
+                <strong>{guide.title || "Huong dan moi"}</strong>
+                <span>{guideMeta}</span>
               </div>
-              <input
-                value={guide.title}
-                onChange={(event) =>
-                  updateGuide(index, {
-                    ...guide,
-                    title: event.target.value,
-                    category: "Hướng dẫn",
-                    isActive: true,
-                    order: guide.order ?? index + 1
-                  })
-                }
-                placeholder="Tiêu đề bài hướng dẫn"
-              />
-              <label className="secondaryButton compactButton uploadPdfButton">
-                {uploadingId === guide.id ? "Đang upload..." : guide.pdfUrl ? "Upload lại PDF" : "Upload PDF"}
-                <input className="fileInput" type="file" accept="application/pdf,.pdf" onChange={(event: ChangeEvent<HTMLInputElement>) => uploadPdf(index, event.target.files?.[0])} />
-              </label>
-              {guide.pdfUrl ? <div className="fileStatus">Đã upload PDF: {guide.pageCount || 0} trang</div> : <div className="fileStatus">Chưa có PDF</div>}
-              <div className="adminActionRow">
-                {guide.pdfUrl ? (
+
+              {!isCollapsed ? (
+                <>
+                  <label className="field compactField">
+                    Danh muc
+                    <input value={guide.category} onChange={(event) => updateGuide(index, { ...guide, category: event.target.value })} placeholder="Huong dan" />
+                  </label>
+
+                  <label className="field compactField">
+                    Tieu de
+                    <input value={guide.title} onChange={(event) => updateGuide(index, { ...guide, title: event.target.value, order: guide.order ?? index + 1 })} placeholder="Tieu de bai huong dan" />
+                  </label>
+
+                  <label className="field compactField">
+                    Mo ta ngan
+                    <textarea value={guide.description || guide.summary || ""} onChange={(event) => updateGuide(index, { ...guide, description: event.target.value, summary: event.target.value })} placeholder="Mo ta ngan" />
+                  </label>
+
+                  <label className="field compactField">
+                    Loai huong dan
+                    <select value={guideType} onChange={(event) => setGuideType(index, guide, event.target.value as "pdf" | "youtube")}>
+                      <option value="pdf">PDF</option>
+                      <option value="youtube">Video YouTube</option>
+                    </select>
+                  </label>
+
+                  <div className="miniGrid guideStatusGrid">
+                    <label className="field compactField">
+                      Trang thai
+                      <select value={isActive ? "active" : "hidden"} onChange={(event) => updateGuide(index, { ...guide, isActive: event.target.value === "active" })}>
+                        <option value="active">Hien thi</option>
+                        <option value="hidden">An</option>
+                      </select>
+                    </label>
+                    <label className="field compactField">
+                      Thu tu
+                      <input type="number" min="1" value={guide.order ?? index + 1} onChange={(event) => updateGuide(index, { ...guide, order: Number(event.target.value) || index + 1 })} />
+                    </label>
+                  </div>
+
+                  {guideType === "pdf" ? (
+                    <>
+                      <label className="secondaryButton compactButton uploadPdfButton">
+                        {uploadingId === guide.id ? "Dang upload..." : guide.pdfUrl ? "Upload lai PDF" : "Upload PDF"}
+                        <input className="fileInput" type="file" accept="application/pdf,.pdf" onChange={(event: ChangeEvent<HTMLInputElement>) => uploadPdf(index, event.target.files?.[0])} />
+                      </label>
+                      {guide.pdfUrl ? <div className="fileStatus">Da upload PDF: {guide.pageCount || 0} trang</div> : <div className="fileStatus">Chua co PDF</div>}
+                    </>
+                  ) : (
+                    <>
+                      <label className="field compactField">
+                        Link YouTube
+                        <input value={guide.youtubeUrl || ""} onChange={(event) => updateYoutubeUrl(index, guide, event.target.value)} placeholder="https://www.youtube.com/watch?v=VIDEO_ID" />
+                      </label>
+                      {youtubeInvalid ? <div className="error">Link YouTube khong hop le. Ho tro watch, youtu.be, shorts va embed.</div> : null}
+                      {guide.youtubeId ? <div className="fileStatus">YouTube ID: {guide.youtubeId}</div> : null}
+                    </>
+                  )}
+                </>
+              ) : null}
+
+              <div className="adminActionRow guideActionRow">
+                {canPreview ? (
                   <Link className="secondaryButton compactButton" href={`/guides/${guide.id}`} target="_blank">
-                    Xem thử
+                    Xem thu
                   </Link>
                 ) : (
                   <span />
                 )}
+                <button className="secondaryButton compactButton" type="button" onClick={() => setCollapsedGuides((current) => ({ ...current, [guide.id]: !isCollapsed }))}>
+                  {isCollapsed ? "Hien chi tiet" : "An chi tiet"}
+                </button>
                 <button className="secondaryButton compactButton" type="button" onClick={() => setGuides(guides.filter((_, i) => i !== index))}>
-                  Xóa
+                  Xoa
                 </button>
               </div>
             </div>

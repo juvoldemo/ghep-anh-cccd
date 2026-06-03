@@ -90,8 +90,10 @@ a {
 }
 
 .homeHeader {
-  min-height: 88px;
-  padding: 18px 20px 14px;
+  min-height: 132px;
+  padding: 27px 20px 21px;
+  background-size: cover;
+  background-position: center;
 }
 
 .compactHeader {
@@ -221,6 +223,13 @@ a {
   min-height: 70px;
   border-top: 3px solid var(--gold);
   background: linear-gradient(135deg, #0057b8 0%, #003f92 100%);
+  background-color: #004d9e;
+}
+
+.bvFooter.customMediaBand {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .bvFooter .bvLogo {
@@ -313,6 +322,24 @@ a {
   border-radius: 2px;
   background: currentColor;
   box-shadow: 16px 0 0 currentColor, 0 6px 0 currentColor, 16px 6px 0 currentColor;
+}
+
+.playGlyph::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.playGlyph::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  border-left: 12px solid currentColor;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
 }
 
 .faqGlyph::before {
@@ -854,6 +881,7 @@ a {
   font-size: 12px;
   line-height: 1.45;
   font-weight: 600;
+  white-space: pre-line;
 }
 
 .accordionPanel ul {
@@ -927,6 +955,10 @@ a {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.guideActionRow {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .guideAdminHeader,
@@ -1167,6 +1199,36 @@ a {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+}
+
+.youtubeGuide {
+  display: grid;
+  gap: 12px;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+}
+
+.video-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.youtubeActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.guideStatusGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .tabBar {

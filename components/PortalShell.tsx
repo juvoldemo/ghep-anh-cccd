@@ -32,6 +32,7 @@ function BaoVietLogo() {
 
 export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBack }: PortalShellProps) {
   const [settings, setSettings] = useState<ShellSettings>({});
+  const isHome = !title;
 
   useEffect(() => {
     fetch("/api/content?key=settings")
@@ -46,8 +47,8 @@ export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBac
   return (
     <main className="page">
       <div className="phoneShell">
-        <header className={title ? "bvHeader compactHeader customMediaBand" : "bvHeader homeHeader customMediaBand"} style={bannerStyle}>
-          {title ? (
+        <header className={isHome ? "bvHeader homeHeader customMediaBand" : "bvHeader compactHeader"} style={isHome ? bannerStyle : undefined}>
+          {!isHome ? (
             <>
               <Link className="headerIcon backIcon" href="/" aria-label={showBack ? "Trang chủ" : "Trang trước"} />
               <h1 className="headerTitle">{title}</h1>
@@ -58,9 +59,11 @@ export function PortalShell({ title, eyebrow = defaultEyebrow, children, showBac
           )}
         </header>
         <div className="shellContent">{children}</div>
-        <footer className="bvFooter customMediaBand" style={bottomStyle}>
-          <span className="mediaPlaceholder" aria-hidden="true" />
-        </footer>
+        {isHome ? (
+          <footer className="bvFooter customMediaBand" style={bottomStyle}>
+            <span className="mediaPlaceholder" aria-hidden="true" />
+          </footer>
+        ) : null}
       </div>
     </main>
   );

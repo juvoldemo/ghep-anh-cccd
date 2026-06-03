@@ -25,8 +25,11 @@ export type Guide = {
   title: string;
   description?: string;
   summary: string;
+  type?: "pdf" | "youtube";
   pdfUrl?: string;
   pageCount?: number;
+  youtubeUrl?: string;
+  youtubeId?: string;
   isActive?: boolean;
   order?: number;
   createdAt?: string;
