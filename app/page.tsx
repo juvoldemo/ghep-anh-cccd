@@ -615,7 +615,8 @@ export default function Page() {
         formData.append("zalo", files.zalo);
         formData.append("format", format);
 
-        const response = await fetch("/api/compose", {
+        const endpoint = window.location.hostname.endsWith("vercel.app") ? "/api/compose-python" : "/api/compose";
+        const response = await fetch(endpoint, {
           method: "POST",
           body: formData
         });
