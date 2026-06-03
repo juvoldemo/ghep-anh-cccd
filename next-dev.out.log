@@ -172,3 +172,23 @@
  ✓ Compiled in 259ms (884 modules)
  ✓ Compiled in 362ms (884 modules)
  ✓ Compiled in 226ms (884 modules)
+ ✓ Compiled in 198ms (884 modules)
+ GET /admin 200 in 268ms
+ ✓ Compiled /api/content in 191ms (513 modules)
+ POST /api/content 200 in 289ms
+ GET /api/content?key=forms 200 in 10ms
+ GET /api/content?key=guides 200 in 21ms
+ GET /api/content?key=faq 200 in 22ms
+ GET /api/content?key=settings 200 in 24ms
+ ✓ Compiled /api/forms/upload in 245ms (515 modules)
+ POST /api/forms/upload 200 in 310ms
+ POST /api/forms/upload 200 in 13ms
+ PUT /api/content?key=forms 200 in 11ms
+ GET / 200 in 66ms
+ GET /forms 200 in 31ms
+ GET /forms?folder=phat-hanh-hop-ong 200 in 21ms
+ GET / 200 in 31ms
+ GET /forms 200 in 25ms
+ GET /forms?folder=bo-sung-suc-khoe 200 in 20ms
+ ✓ Compiled in 850ms (621 modules)
+ GET /forms?folder=bo-sung-suc-khoe 200 in 273ms

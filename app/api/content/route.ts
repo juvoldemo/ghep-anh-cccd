@@ -33,7 +33,12 @@ export async function PUT(request: NextRequest) {
   if (!key) return NextResponse.json({ error: "Khóa nội dung không hợp lệ." }, { status: 400 });
   if (!isAdmin(request)) return NextResponse.json({ error: "Không có quyền truy cập." }, { status: 401 });
 
-  const data = await request.json();
-  await writeContent(key, data);
-  return NextResponse.json({ ok: true });
+  try {
+    const data = await request.json();
+    await writeContent(key, data);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Khong the luu noi dung.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

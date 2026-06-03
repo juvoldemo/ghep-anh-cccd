@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { put } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -30,6 +31,17 @@ export async function POST(request: NextRequest) {
   }
 
   const fileName = safeFileName(file.name.endsWith(".pdf") ? file.name : `${file.name}.pdf`);
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`pdfs/${fileName}`, file, {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: "application/pdf"
+    });
+    return NextResponse.json({ file: blob.url });
+  }
+
   const uploadDir = path.join(process.cwd(), "public", "pdfs");
   await mkdir(uploadDir, { recursive: true });
   await writeFile(path.join(uploadDir, fileName), Buffer.from(await file.arrayBuffer()));
