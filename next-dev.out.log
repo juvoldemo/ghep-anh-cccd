@@ -151,3 +151,24 @@
  GET /api/content?key=guides 200 in 23ms
  GET /api/content?key=faq 200 in 25ms
  GET /api/content?key=settings 200 in 26ms
+ ✓ Compiled in 441ms (885 modules)
+ ✓ Compiled in 475ms (885 modules)
+ ✓ Compiled in 167ms (885 modules)
+ ✓ Compiled /api/forms/upload in 293ms (904 modules)
+ POST /api/forms/upload 200 in 379ms
+ ✓ Compiled /api/content in 112ms (517 modules)
+ PUT /api/content?key=forms 200 in 142ms
+ GET / 200 in 72ms
+ ✓ Compiled /forms in 231ms (519 modules)
+ GET /forms 200 in 319ms
+ GET /forms?folder=phat-hanh-hop-ong 200 in 26ms
+ ✓ Compiled /forms/[id] in 411ms (913 modules)
+ GET /forms/mau-1780475461805 200 in 975ms
+ GET / 200 in 33ms
+ GET /forms 200 in 34ms
+ GET / 200 in 28ms
+ GET /admin 200 in 26ms
+ ✓ Compiled in 541ms (884 modules)
+ ✓ Compiled in 259ms (884 modules)
+ ✓ Compiled in 362ms (884 modules)
+ ✓ Compiled in 226ms (884 modules)

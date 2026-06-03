@@ -93,6 +93,16 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedPass = localStorage.getItem("adminPass");
+      if (savedPass) {
+        setAdminPass(savedPass);
+        setLoggedIn(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (loggedIn) void loadContent();
   }, [loggedIn]);
 
@@ -103,12 +113,14 @@ export default function AdminPage() {
       setMessage("Mật khẩu không đúng.");
       return;
     }
+    localStorage.setItem("adminPass", password);
     setAdminPass(password);
     setLoggedIn(true);
     setPassword("");
   };
 
   const logout = () => {
+    localStorage.removeItem("adminPass");
     setLoggedIn(false);
     setAdminPass("");
     setSection("dashboard");
@@ -116,6 +128,10 @@ export default function AdminPage() {
   };
 
   const save = async (key: ContentKey) => {
+    if (!adminPass) {
+      setMessage("Vui lòng đăng nhập lại để lưu thay đổi.");
+      return;
+    }
     const value = key === "forms" ? forms : key === "guides" ? guides : key === "faq" ? faq : settings;
     const response = await fetch(`/api/content?key=${key}`, {
       method: "PUT",

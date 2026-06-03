@@ -11,6 +11,24 @@
           "size": "351 KB"
         }
       ]
+    },
+    {
+      "id": "bo-sung-suc-khoe",
+      "title": "Bổ sung sức khỏe",
+      "items": [
+        {
+          "id": "mau-1780479016883",
+          "title": "MS10_SK-Tonghop.pdf",
+          "file": "/pdfs/ms10-sk-tonghop.pdf",
+          "size": "649 KB"
+        },
+        {
+          "id": "mau-1780479026825",
+          "title": "MS09_HuyetHoc.pdf",
+          "file": "/pdfs/ms09-huyethoc.pdf",
+          "size": "647 KB"
+        }
+      ]
     }
   ]
 }
