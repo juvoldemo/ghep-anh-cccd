@@ -1,5 +1,6 @@
 node_modules/
 .next/
+.next-dev/
 out/
 dist/
 .vercel/
@@ -28,6 +29,7 @@ venv/
 # Node
 node_modules/
 .next/
+.next-dev/
 .next-cache/
 
 # Logs

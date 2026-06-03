@@ -1,14 +1,110 @@
 {
   "folders": [
     {
-      "id": "phat-hanh-hop-ong",
+      "id": "phat-hanh-hop-dong",
       "title": "Phát hành hợp đồng",
       "items": [
         {
-          "id": "mau-1780475461805",
-          "title": "Xác nhận dữ liệu cá nhân.pdf",
-          "file": "/pdfs/xac-nhan-du-lieu-ca-nhan.pdf",
-          "size": "351 KB"
+          "id": "mau-1780483303633",
+          "title": "BCK ND CD.pdf",
+          "file": "/pdfs/bck-nd-cd.pdf",
+          "size": "197 KB"
+        },
+        {
+          "id": "mau-1780483325658",
+          "title": "8.Biểu mẫu cung cấp thông tin đối với cá nhân là người nước ngoài.pdf",
+          "file": "/pdfs/8.bieu-mau-cung-cap-thong-tin-oi-voi-ca-nhan-la-nguoi-nuoc-ngoai.pdf",
+          "size": "87 KB"
+        },
+        {
+          "id": "mau-1780483334165",
+          "title": "3. Xác nhận đồng ý về việc xử lý dữ liệu cá nhân - BV.2025.01.pdf",
+          "file": "/pdfs/3.-xac-nhan-ong-y-ve-viec-xu-ly-du-lieu-ca-nhan-bv.2025.01.pdf",
+          "size": "90 KB"
+        },
+        {
+          "id": "mau-1780483343367",
+          "title": "5.Giấy xác nhận mẫu chữ ký - BV.2025.01.pdf",
+          "file": "/pdfs/5.giay-xac-nhan-mau-chu-ky-bv.2025.01.pdf",
+          "size": "76 KB"
+        },
+        {
+          "id": "mau-1780483344479",
+          "title": "9. Giấy xác nhận thông tin xác thực - BV.2025.01.pdf",
+          "file": "/pdfs/9.-giay-xac-nhan-thong-tin-xac-thuc-bv.2025.01.pdf",
+          "size": "76 KB"
+        },
+        {
+          "id": "mau-1780483355166",
+          "title": "10.Giấy đề nghị điều chỉnh thông tin-BV.2025.06.pdf",
+          "file": "/pdfs/10.giay-e-nghi-ieu-chinh-thong-tin-bv.2025.06.pdf",
+          "size": "150 KB"
+        },
+        {
+          "id": "mau-1780483360736",
+          "title": "YCKH-07-De nghi huy bo YCBH.pdf",
+          "file": "/pdfs/yckh-07-de-nghi-huy-bo-ycbh.pdf",
+          "size": "461 KB"
+        },
+        {
+          "id": "mau-1780483365309",
+          "title": "Cv 1884 PL_Bản câu hỏi tài chính 07_2023.pdf",
+          "file": "/pdfs/cv-1884-pl-ban-cau-hoi-tai-chinh-07-2023.pdf",
+          "size": "345 KB"
+        },
+        {
+          "id": "mau-1780483372920",
+          "title": "8.Biểu mẫu cung cấp thông tin đối với cá nhân là người nước ngoài.pdf",
+          "file": "/pdfs/8.bieu-mau-cung-cap-thong-tin-oi-voi-ca-nhan-la-nguoi-nuoc-ngoai.pdf",
+          "size": "87 KB"
+        }
+      ]
+    },
+    {
+      "id": "quan-ly-hop-ong",
+      "title": "Quản lý hợp đồng",
+      "items": [
+        {
+          "id": "mau-1780483394246",
+          "title": "YCKH-01-Thay doi thong tin KH_T10 2025.pdf",
+          "file": "/pdfs/yckh-01-thay-doi-thong-tin-kh-t10-2025.pdf",
+          "size": "772 KB"
+        },
+        {
+          "id": "mau-1780483414831",
+          "title": "YCKH-02-Thay doi nguoi thu huong.pdf",
+          "file": "/pdfs/yckh-02-thay-doi-nguoi-thu-huong.pdf",
+          "size": "866 KB"
+        },
+        {
+          "id": "mau-1780483415793",
+          "title": "YCKH-04-Thay doi dieu kien dong phi_T10 2025.pdf",
+          "file": "/pdfs/yckh-04-thay-doi-dieu-kien-dong-phi-t10-2025.pdf",
+          "size": "966 KB"
+        },
+        {
+          "id": "mau-1780483437071",
+          "title": "YCKH-06-Thanh toan QLBH_2026 01 06.pdf",
+          "file": "/pdfs/yckh-06-thanh-toan-qlbh-2026-01-06.pdf",
+          "size": "794 KB"
+        },
+        {
+          "id": "mau-1780483444228",
+          "title": "YCKH-11-De nghi Huy HD-SP-QLBH_2025 01 06.pdf",
+          "file": "/pdfs/yckh-11-de-nghi-huy-hd-sp-qlbh-2025-01-06.pdf",
+          "size": "957 KB"
+        },
+        {
+          "id": "mau-1780483457619",
+          "title": "CV_2184_PL03_Tờ-khai-sức-khỏe_2023_Final.pdf",
+          "file": "/pdfs/cv-2184-pl03-to-khai-suc-khoe-2023-final.pdf",
+          "size": "704 KB"
+        },
+        {
+          "id": "mau-1780483462135",
+          "title": "1.Đề nghị cấp lại HĐBH (mẫu của TVV,cán bộ) - BV.2025.01.pdf",
+          "file": "/pdfs/1.-e-nghi-cap-lai-h-bh-mau-cua-tvv-can-bo-bv.2025.01.pdf",
+          "size": "68 KB"
         }
       ]
     },
@@ -17,22 +113,64 @@
       "title": "Bổ sung sức khỏe",
       "items": [
         {
-          "id": "mau-1780479016883",
-          "title": "MS10_SK-Tonghop.pdf",
-          "file": "/pdfs/ms10-sk-tonghop.pdf",
-          "size": "649 KB"
+          "id": "mau-1780483476145",
+          "title": "MS01_Timmach.pdf",
+          "file": "/pdfs/ms01-timmach.pdf",
+          "size": "638 KB"
         },
         {
-          "id": "mau-1780479026825",
+          "id": "mau-1780483495116",
+          "title": "MS02_TangHA.pdf",
+          "file": "/pdfs/ms02-tangha.pdf",
+          "size": "638 KB"
+        },
+        {
+          "id": "mau-1780483499763",
+          "title": "MS03_HenPQ.pdf",
+          "file": "/pdfs/ms03-henpq.pdf",
+          "size": "637 KB"
+        },
+        {
+          "id": "mau-1780483500917",
+          "title": "MS04_Viemgan.pdf",
+          "file": "/pdfs/ms04-viemgan.pdf",
+          "size": "648 KB"
+        },
+        {
+          "id": "mau-1780483501980",
+          "title": "MS05_Tieuduong.pdf",
+          "file": "/pdfs/ms05-tieuduong.pdf",
+          "size": "635 KB"
+        },
+        {
+          "id": "mau-1780483516537",
+          "title": "MS06_KhoiU.pdf",
+          "file": "/pdfs/ms06-khoiu.pdf",
+          "size": "636 KB"
+        },
+        {
+          "id": "mau-1780483517919",
+          "title": "MS07_TamThan.pdf",
+          "file": "/pdfs/ms07-tamthan.pdf",
+          "size": "642 KB"
+        },
+        {
+          "id": "mau-1780483527231",
+          "title": "MS08_ThanKinh.pdf",
+          "file": "/pdfs/ms08-thankinh.pdf",
+          "size": "648 KB"
+        },
+        {
+          "id": "mau-1780483528254",
           "title": "MS09_HuyetHoc.pdf",
           "file": "/pdfs/ms09-huyethoc.pdf",
           "size": "647 KB"
         },
         {
-          "id": "mau-1780482158917",
-          "title": "MS08_ThanKinh.pdf",
-          "file": "/pdfs/ms08-thankinh.pdf",
-          "size": "648 KB"
+          "id": "mau-1780483537571",
+          "title": "MS10_SK-Tonghop.pdf",
+          "file": "/pdfs/ms10-sk-tonghop.pdf",
+          "size": "649 KB"
         }
       ]
     }
