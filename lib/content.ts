@@ -1,4 +1,4 @@
-import { get, put } from "@vercel/blob";
+import { get, list, put } from "@vercel/blob";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 
@@ -67,6 +67,14 @@ function blobPath(key: ContentKey) {
   return `content/${dataFiles[key]}`;
 }
 
+function blobVersionPrefix(key: ContentKey) {
+  return `content/${key}/`;
+}
+
+function blobVersionPath(key: ContentKey) {
+  return `${blobVersionPrefix(key)}${Date.now()}.json`;
+}
+
 function hasBlobStore() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
@@ -79,22 +87,29 @@ async function streamToText(stream: ReadableStream<Uint8Array>) {
   return new Response(stream).text();
 }
 
-async function readBlobContent<T>(key: ContentKey, access: "private" | "public") {
-  const blob = await get(blobPath(key), {
-    access,
-    useCache: access === "private" ? false : undefined
-  });
+async function readBlobContent<T>(pathname: string) {
+  const blob = await get(pathname, { access: "public" });
   if (blob?.statusCode !== 200) return null;
   return JSON.parse(await streamToText(blob.stream)) as T;
 }
 
 export async function readContent<T>(key: ContentKey): Promise<T> {
   if (hasBlobStore()) {
-    const privateContent = await readBlobContent<T>(key, "private").catch(() => null);
-    if (privateContent) return privateContent;
+    const latest = await list({ prefix: blobVersionPrefix(key), limit: 100 })
+      .then((result) =>
+        result.blobs
+          .filter((blob) => blob.pathname.endsWith(".json"))
+          .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
+      )
+      .catch(() => null);
 
-    const publicContent = await readBlobContent<T>(key, "public").catch(() => null);
-    if (publicContent) return publicContent;
+    if (latest) {
+      const latestContent = await readBlobContent<T>(latest.pathname).catch(() => null);
+      if (latestContent) return latestContent;
+    }
+
+    const legacyContent = await readBlobContent<T>(blobPath(key)).catch(() => null);
+    if (legacyContent) return legacyContent;
   }
 
   const raw = await readFile(dataPath(key), "utf8");
@@ -105,10 +120,9 @@ export async function writeContent(key: ContentKey, value: unknown) {
   const content = `${JSON.stringify(value, null, 2)}\n`;
 
   if (hasBlobStore()) {
-    await put(blobPath(key), content, {
-      access: "private",
+    await put(blobVersionPath(key), content, {
+      access: "public",
       addRandomSuffix: false,
-      allowOverwrite: true,
       cacheControlMaxAge: 60,
       contentType: "application/json"
     });
