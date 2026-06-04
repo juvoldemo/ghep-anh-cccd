@@ -2,6 +2,9 @@ import Link from "next/link";
 import { PortalShell } from "@/components/PortalShell";
 import { getGuides } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function GuidesPage() {
   const guides = (await getGuides())
     .filter((guide) => guide.isActive !== false)

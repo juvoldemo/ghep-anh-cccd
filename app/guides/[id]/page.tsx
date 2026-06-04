@@ -5,6 +5,9 @@ import { PdfSlideViewer } from "@/components/PdfSlideViewer";
 import { YoutubeGuideViewer } from "@/components/YoutubeGuideViewer";
 import { getGuides } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type GuideDetailProps = {
   params: Promise<{ id: string }>;
 };

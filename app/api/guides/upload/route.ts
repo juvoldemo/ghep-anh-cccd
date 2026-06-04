@@ -1,6 +1,6 @@
 import { put } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
-import { fileSizeLabel, isAdminRequest, safeFileName, writePublicFile } from "@/lib/serverApi";
+import { fileSizeLabel, isAdminRequest, isVercel, safeFileName, writePublicFile } from "@/lib/serverApi";
 
 export const runtime = "nodejs";
 
@@ -26,6 +26,13 @@ export async function POST(request: NextRequest) {
       pdfUrl: blob.url,
       size
     });
+  }
+
+  if (isVercel()) {
+    return NextResponse.json(
+      { error: "Chua cau hinh Vercel Blob. Hay tao Blob Store va them BLOB_READ_WRITE_TOKEN trong Environment Variables." },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({

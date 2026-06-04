@@ -79,12 +79,22 @@ async function streamToText(stream: ReadableStream<Uint8Array>) {
   return new Response(stream).text();
 }
 
+async function readBlobContent<T>(key: ContentKey, access: "private" | "public") {
+  const blob = await get(blobPath(key), {
+    access,
+    useCache: access === "private" ? false : undefined
+  });
+  if (blob?.statusCode !== 200) return null;
+  return JSON.parse(await streamToText(blob.stream)) as T;
+}
+
 export async function readContent<T>(key: ContentKey): Promise<T> {
   if (hasBlobStore()) {
-    const blob = await get(blobPath(key), { access: "public" });
-    if (blob?.statusCode === 200) {
-      return JSON.parse(await streamToText(blob.stream)) as T;
-    }
+    const privateContent = await readBlobContent<T>(key, "private").catch(() => null);
+    if (privateContent) return privateContent;
+
+    const publicContent = await readBlobContent<T>(key, "public").catch(() => null);
+    if (publicContent) return publicContent;
   }
 
   const raw = await readFile(dataPath(key), "utf8");
@@ -96,9 +106,10 @@ export async function writeContent(key: ContentKey, value: unknown) {
 
   if (hasBlobStore()) {
     await put(blobPath(key), content, {
-      access: "public",
+      access: "private",
       addRandomSuffix: false,
       allowOverwrite: true,
+      cacheControlMaxAge: 60,
       contentType: "application/json"
     });
     return;

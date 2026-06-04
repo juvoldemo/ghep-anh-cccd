@@ -2,6 +2,9 @@ import Link from "next/link";
 import { PortalShell } from "@/components/PortalShell";
 import { getForms } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type FormsPageProps = {
   searchParams?: Promise<{ folder?: string }>;
 };

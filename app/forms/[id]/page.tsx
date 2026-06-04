@@ -3,6 +3,9 @@ import { FormPdfViewer } from "@/components/FormPdfViewer";
 import { PortalShell } from "@/components/PortalShell";
 import { getForms } from "@/lib/content";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type FormDetailProps = {
   params: Promise<{ id: string }>;
 };
