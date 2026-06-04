@@ -379,7 +379,7 @@ a {
   background: #eef6ff;
 }
 
-.featureIcon {
+.featureCard .featureIcon {
   width: 72px;
   min-width: 72px;
   height: 72px;
@@ -387,7 +387,7 @@ a {
   background: #f3f8ff;
 }
 
-.featureIcon img {
+.featureCard .featureIcon img {
   width: 56px;
   height: 56px;
   display: block;
