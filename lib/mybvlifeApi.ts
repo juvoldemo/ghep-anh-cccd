@@ -19,9 +19,19 @@ export type RecoveryResult = {
   raw?: unknown;
 };
 
-const apiBase = (process.env.NEXT_PUBLIC_MYBVLIFE_API_BASE || "http://localhost:8001").replace(/\/$/, "");
+const apiBase = (process.env.NEXT_PUBLIC_MYBVLIFE_API_BASE || "").replace(/\/$/, "");
 const myBVLifeValidateUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPasswordValid";
 const myBVLifeConfirmUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPassword";
+
+function getOcrUrl() {
+  if (!apiBase) return "/api/mybvlife/ocr";
+  if (typeof window !== "undefined") {
+    const isLocalPage = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const isLocalApi = /\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(apiBase);
+    if (!isLocalPage && isLocalApi) return "/api/mybvlife/ocr";
+  }
+  return `${apiBase}/api/ocr-cccd`;
+}
 
 async function readJson<T>(response: Response): Promise<T> {
   const data = (await response.json().catch(() => null)) as (T & { detail?: string; message?: string }) | null;
@@ -35,7 +45,7 @@ export async function ocrCccd(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${apiBase}/api/ocr-cccd`, {
+  const response = await fetch(getOcrUrl(), {
     method: "POST",
     body: formData
   });
