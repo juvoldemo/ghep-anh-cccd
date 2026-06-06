@@ -28,6 +28,12 @@ const features = [
     text: "Giải đáp các thắc mắc"
   },
   {
+    href: "/mybvlife-recovery",
+    iconSrc: "/icons/mybvlife.png",
+    title: "Khôi phục MyBVLife",
+    text: "Hỗ trợ lấy lại tài khoản/mật khẩu MyBVLife từ ảnh CCCD"
+  },
+  {
     href: "/admin",
     iconSrc: "/icons/admin.png",
     title: "Admin",

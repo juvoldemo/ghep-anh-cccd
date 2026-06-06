@@ -6,17 +6,18 @@ import { PortalShell } from "@/components/PortalShell";
 import type { FaqItem, FormFolder, FormItem, FormsData, Guide, MergeSettings } from "@/lib/content";
 import { extractYouTubeId } from "@/lib/youtube";
 
-type AdminSection = "dashboard" | "forms" | "guides" | "faq" | "settings";
-type ContentKey = Exclude<AdminSection, "dashboard">;
+type AdminSection = "dashboard" | "forms" | "guides" | "faq" | "settings" | "mybvlife";
+type ContentKey = Exclude<AdminSection, "dashboard" | "mybvlife">;
 
 const emptyForms: FormsData = { folders: [] };
 const emptySettings: MergeSettings = { mergeNote: "", defaultFormat: "jpeg" };
 
-const adminItems: Array<{ section: ContentKey; icon: string; title: string; desc: string }> = [
+const adminItems: Array<{ section: Exclude<AdminSection, "dashboard">; icon: string; title: string; desc: string }> = [
   { section: "forms", icon: "folderGlyph", title: "1. Quản lý mẫu biểu", desc: "Thêm, sửa, xóa mẫu biểu PDF" },
   { section: "guides", icon: "bookGlyph", title: "2. Quản lý hướng dẫn", desc: "Nhập tiêu đề và upload PDF" },
   { section: "faq", icon: "faqGlyph", title: "3. Quản lý FAQ", desc: "Quản lý câu hỏi thường gặp" },
-  { section: "settings", icon: "gearGlyph muted", title: "4. Cài đặt hệ thống", desc: "Cấu hình chung, ghép ảnh" }
+  { section: "settings", icon: "gearGlyph muted", title: "4. Cài đặt hệ thống", desc: "Cấu hình chung, ghép ảnh" },
+  { section: "mybvlife", icon: "idGlyph", title: "5. Khôi phục MyBVLife", desc: "Cấu hình, rate limit và log đã che số CCCD" }
 ];
 
 function makeId(value: string) {
@@ -224,8 +225,9 @@ export default function AdminPage() {
       {section === "guides" ? <GuidesEditor guides={guides} setGuides={setGuides} adminPass={adminPass} /> : null}
       {section === "faq" ? <FaqEditor faq={faq} setFaq={setFaq} /> : null}
       {section === "settings" ? <SettingsEditor settings={settings} setSettings={setSettings} adminPass={adminPass} /> : null}
+      {section === "mybvlife" ? <MyBVLifeAdminEditor /> : null}
 
-      {section !== "dashboard" ? (
+      {section !== "dashboard" && section !== "mybvlife" ? (
         <button className="primaryButton stickySave" type="button" onClick={() => save(section)}>
           Lưu thay đổi
         </button>
@@ -553,6 +555,24 @@ function FaqEditor({ faq, setFaq }: { faq: FaqItem[]; setFaq: Dispatch<SetStateA
           </div>
         );
       })}
+    </section>
+  );
+}
+
+function MyBVLifeAdminEditor() {
+  return (
+    <section className="adminEditor">
+      <h2 className="sectionTitle">Khôi phục MyBVLife</h2>
+      <div className="editorGroup">
+        <strong>Cấu hình mặc định</strong>
+        <div className="fileStatus">Trạng thái: bật</div>
+        <div className="fileStatus">Giới hạn: 10 request/phút/IP</div>
+        <div className="fileStatus">Log: chỉ lưu CCCD dạng che số trong bộ nhớ backend</div>
+      </div>
+      <div className="warning">
+        Phần cấu hình nâng cao đang đặt trong backend/app/mybvlife_recovery/config.py. Backend có endpoint xem/xóa log đã che số:
+        /api/mybvlife/admin/logs.
+      </div>
     </section>
   );
 }

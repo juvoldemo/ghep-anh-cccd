@@ -21,6 +21,9 @@ __pycache__/
 *.pyo
 *.pyd
 venv/
+backend/.venv/
+tmp_uploads/
+backend/tmp_uploads/
 .env
 
 # Streamlit
