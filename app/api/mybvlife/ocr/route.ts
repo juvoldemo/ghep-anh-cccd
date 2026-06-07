@@ -5,6 +5,7 @@ export const maxDuration = 60;
 
 const maxFileSize = 10 * 1024 * 1024;
 const allowedTypes = new Set(["image/jpeg", "image/png"]);
+const backendTimeoutMs = 52_000;
 
 function getBackendOcrUrl() {
   const base = (process.env.MYBVLIFE_API_BASE || process.env.NEXT_PUBLIC_MYBVLIFE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
@@ -28,23 +29,34 @@ export async function POST(request: NextRequest) {
   const proxyForm = new FormData();
   proxyForm.append("file", file, file.name || "zalo-cccd.png");
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), backendTimeoutMs);
+
   try {
     const response = await fetch(getBackendOcrUrl(), {
       method: "POST",
-      body: proxyForm
+      body: proxyForm,
+      signal: controller.signal
     });
     const data = await response.json().catch(() => null);
     return NextResponse.json(data || { detail: "Backend OCR trả về dữ liệu không hợp lệ." }, { status: response.status });
-  } catch {
+  } catch (error) {
+    const message =
+      error instanceof DOMException && error.name === "AbortError"
+        ? "Backend OCR phản hồi quá lâu. Render có thể đang cold start hoặc đang tải model PaddleOCR lần đầu, vui lòng chờ 1-2 phút rồi thử lại."
+        : "Chưa kết nối được backend OCR. Vui lòng chạy FastAPI backend hoặc cấu hình MYBVLIFE_API_BASE.";
+
     return NextResponse.json(
       {
         ok: false,
         source: "cropped_field_ocr",
         data: { fullName: "", cccd: "", cmnd: "" },
         warnings: [],
-        message: "Chưa kết nối được backend OCR. Vui lòng chạy FastAPI backend hoặc cấu hình MYBVLIFE_API_BASE."
+        message
       },
       { status: 502 }
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

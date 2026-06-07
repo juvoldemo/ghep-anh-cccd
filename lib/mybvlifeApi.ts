@@ -37,18 +37,12 @@ export type RecoveryResult = {
   raw?: unknown;
 };
 
-const apiBase = (process.env.NEXT_PUBLIC_MYBVLIFE_API_BASE || "").replace(/\/$/, "");
 const myBVLifeValidateUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPasswordValid";
 const myBVLifeConfirmUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPassword";
+const ocrTimeoutMs = 55_000;
 
 function getOcrUrl() {
-  if (!apiBase) return "/api/mybvlife/ocr";
-  if (typeof window !== "undefined") {
-    const isLocalPage = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-    const isLocalApi = /\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(apiBase);
-    if (!isLocalPage && isLocalApi) return "/api/mybvlife/ocr";
-  }
-  return `${apiBase}/api/ocr-cccd`;
+  return "/api/mybvlife/ocr";
 }
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -62,12 +56,24 @@ async function readJson<T>(response: Response): Promise<T> {
 export async function ocrCccd(file: File) {
   const formData = new FormData();
   formData.append("file", file);
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), ocrTimeoutMs);
 
-  const response = await fetch(getOcrUrl(), {
-    method: "POST",
-    body: formData
-  });
-  return readJson<OcrResult>(response);
+  try {
+    const response = await fetch(getOcrUrl(), {
+      method: "POST",
+      body: formData,
+      signal: controller.signal
+    });
+    return readJson<OcrResult>(response);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("Backend OCR phản hồi quá lâu. Nếu Render vừa khởi động, vui lòng chờ 1-2 phút rồi bấm OCR lại.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 export async function recoverMyBVLife(full_name: string, identity_no: string) {
