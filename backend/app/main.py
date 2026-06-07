@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.mybvlife_recovery.ocr_service import warm_up_ocr_engines
 from app.mybvlife_recovery.router import router as mybvlife_router
 
 app = FastAPI(title="BAOVIET Life Internal API")
@@ -22,11 +21,6 @@ app.add_middleware(
 app.include_router(mybvlife_router)
 
 
-@app.on_event("startup")
-async def warm_up_services():
-    warm_up_ocr_engines()
-
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     first_error = exc.errors()[0] if exc.errors() else {}
@@ -38,7 +32,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/health")
 async def health():
-    return {"ok": True}
+    return {"status": "ok"}
 
 
 @app.get("/")

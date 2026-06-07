@@ -210,13 +210,6 @@ def _get_paddleocr_reader() -> Any:
         return PaddleOCR(use_angle_cls=False, lang="vi", show_log=False)
 
 
-def warm_up_ocr_engines() -> None:
-    try:
-        _get_paddleocr_reader()
-    except Exception as exc:
-        logger.warning("Could not warm up PaddleOCR; EasyOCR fallback may be used: %s", exc)
-
-
 def _token_from_box(text: str, box: Any) -> OcrToken | None:
     try:
         xs = [float(point[0]) for point in box]
