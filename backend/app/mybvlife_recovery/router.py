@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
+from app.mybvlife_recovery.ai_vision_ocr import ocr_cccd_with_ai_vision
 from app.mybvlife_recovery.config import MYBVLIFE_RECOVERY_ENABLED, RECOVERY_RATE_LIMIT_PER_MINUTE
 from app.mybvlife_recovery.ocr_service import ocr_cccd
 from app.mybvlife_recovery.recovery_service import recover_mybvlife
@@ -55,11 +56,27 @@ async def _save_upload_temporarily(file: UploadFile) -> Path:
     return temp_path
 
 
+async def _read_ocr_with_fallback(temp_path: Path, content_type: str | None) -> dict:
+    result = ocr_cccd(temp_path)
+    if result.get("ok"):
+        return result
+
+    ai_result = await ocr_cccd_with_ai_vision(temp_path, content_type or "image/jpeg")
+    if ai_result.get("ok"):
+        return {
+            **ai_result,
+            "method": "ai_vision",
+            "processing_time_ms": result.get("processing_time_ms", 0),
+            "debug_timing": result.get("debug_timing", {}),
+        }
+    return result
+
+
 @router.post("/api/ocr-cccd", response_model=OcrResponse)
 async def ai_ocr_endpoint(file: UploadFile = File(...)):
     temp_path = await _save_upload_temporarily(file)
     try:
-        result = ocr_cccd(temp_path)
+        result = await _read_ocr_with_fallback(temp_path, file.content_type)
         data = result["data"]
         return {
             **result,
@@ -76,7 +93,7 @@ async def ai_ocr_endpoint(file: UploadFile = File(...)):
 async def legacy_ocr_endpoint(file: UploadFile = File(...)):
     temp_path = await _save_upload_temporarily(file)
     try:
-        result = ocr_cccd(temp_path)
+        result = await _read_ocr_with_fallback(temp_path, file.content_type)
         data = result["data"]
         return {
             **result,

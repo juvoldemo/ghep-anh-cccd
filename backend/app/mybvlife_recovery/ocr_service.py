@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import shutil
+import tempfile
 import time
 import unicodedata
 from pathlib import Path
@@ -313,15 +314,28 @@ def _paddle_result_to_tokens(result: Any) -> list[OcrToken]:
 
 def _extract_paddleocr_field(image: Any) -> FieldOcrResult:
     ocr = _get_paddleocr_reader()
-    try:
-        result = ocr.predict(image)
-    except AttributeError:
-        result = ocr.ocr(image, cls=False)
-    texts: list[str] = []
-    confidences: list[float] = []
-    if result and isinstance(result[0], dict):
-        for page in result:
-            for text, confidence in zip(page.get("rec_texts") or [], page.get("rec_scores") or []):
+
+    def parse_result(result: Any) -> FieldOcrResult:
+        texts: list[str] = []
+        confidences: list[float] = []
+        if result and isinstance(result[0], dict):
+            for page in result:
+                for text, confidence in zip(page.get("rec_texts") or [], page.get("rec_scores") or []):
+                    cleaned = _clean_spaces(str(text))
+                    if cleaned:
+                        texts.append(cleaned)
+                        try:
+                            confidences.append(float(confidence))
+                        except Exception:
+                            pass
+            return {"text": _clean_spaces(" ".join(texts)), "confidence": sum(confidences) / len(confidences) if confidences else 0.0}
+
+        for page in result or []:
+            for item in page or []:
+                if not item or len(item) < 2:
+                    continue
+                text = item[1][0] if item[1] and len(item[1]) > 0 else ""
+                confidence = item[1][1] if item[1] and len(item[1]) > 1 else 0.0
                 cleaned = _clean_spaces(str(text))
                 if cleaned:
                     texts.append(cleaned)
@@ -331,20 +345,35 @@ def _extract_paddleocr_field(image: Any) -> FieldOcrResult:
                         pass
         return {"text": _clean_spaces(" ".join(texts)), "confidence": sum(confidences) / len(confidences) if confidences else 0.0}
 
-    for page in result or []:
-        for item in page or []:
-            if not item or len(item) < 2:
-                continue
-            text = item[1][0] if item[1] and len(item[1]) > 0 else ""
-            confidence = item[1][1] if item[1] and len(item[1]) > 1 else 0.0
-            cleaned = _clean_spaces(str(text))
-            if cleaned:
-                texts.append(cleaned)
-                try:
-                    confidences.append(float(confidence))
-                except Exception:
-                    pass
-    return {"text": _clean_spaces(" ".join(texts)), "confidence": sum(confidences) / len(confidences) if confidences else 0.0}
+    parsed: FieldOcrResult = {"text": "", "confidence": 0.0}
+    try:
+        try:
+            result = ocr.predict(image)
+        except AttributeError:
+            result = ocr.ocr(image, cls=False)
+        parsed = parse_result(result)
+    except Exception as exc:
+        logger.warning("PaddleOCR direct field read failed: %s", exc)
+    if parsed["text"] or isinstance(image, (str, Path)):
+        return parsed
+
+    try:
+        import cv2  # type: ignore
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
+            temp_path = Path(temp_file.name)
+        try:
+            cv2.imwrite(str(temp_path), image)
+            try:
+                file_result = ocr.predict(str(temp_path))
+            except AttributeError:
+                file_result = ocr.ocr(str(temp_path), cls=False)
+            return parse_result(file_result)
+        finally:
+            temp_path.unlink(missing_ok=True)
+    except Exception as exc:
+        logger.warning("PaddleOCR file fallback failed: %s", exc)
+        return parsed
 
 
 def _extract_easyocr_field(image: Any) -> FieldOcrResult:
@@ -608,14 +637,14 @@ def ocr_single_field(crop: Any, field_type: Literal["identity_no", "old_id_no", 
 
     try:
         best = _extract_paddleocr_field(prepared)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("PaddleOCR field read failed for %s: %s", field_type, exc)
 
     if not best["text"]:
         try:
             best = _extract_easyocr_field(prepared)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("EasyOCR field read failed for %s: %s", field_type, exc)
 
     return {"text": _normalize_field_text(best["text"], field_type), "confidence": round(float(best["confidence"] or 0.0), 4)}
 
