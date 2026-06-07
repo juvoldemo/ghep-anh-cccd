@@ -39,11 +39,10 @@ export type RecoveryResult = {
 
 const myBVLifeValidateUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPasswordValid";
 const myBVLifeConfirmUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPassword";
-const productionOcrApiBase = "https://ghep-anh-cccd.onrender.com";
-const ocrTimeoutMs = 180_000;
+const ocrTimeoutMs = 60_000;
 
 function getOcrUrl() {
-  return `${productionOcrApiBase}/api/ocr-cccd`;
+  return "/api/mybvlife/ocr";
 }
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -69,7 +68,7 @@ export async function ocrCccd(file: File) {
     return readJson<OcrResult>(response);
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new Error("Backend OCR phản hồi quá lâu. Nếu Render vừa khởi động, vui lòng chờ 1-2 phút rồi bấm OCR lại.");
+      throw new Error("AI OCR phản hồi quá lâu. Vui lòng thử lại.");
     }
     throw error;
   } finally {
