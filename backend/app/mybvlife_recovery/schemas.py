@@ -9,12 +9,25 @@ class OcrData(BaseModel):
     cmnd: str = ""
 
 
+class OcrConfidence(BaseModel):
+    fullName: float = 0.0
+    cccd: float = 0.0
+    cmnd: float = 0.0
+
+
 class OcrResponse(BaseModel):
     ok: bool
-    source: Literal["ai_vision", "qr", "ocr"] = "ai_vision"
+    source: Literal["ai_vision", "qr", "ocr", "cropped_field_ocr"] = "ai_vision"
     data: OcrData
     warnings: list[str] = []
     message: str | None = None
+    confidence: OcrConfidence = Field(default_factory=OcrConfidence)
+    method: Literal["ai_vision", "qr", "cropped_field_ocr", "full_image_fallback_ocr"] | None = None
+    processing_time_ms: int = 0
+    debug_timing: dict[str, int] = Field(default_factory=dict)
+    full_name: str = ""
+    identity_no: str = ""
+    old_id_no: str = ""
 
 
 class RecoveryRequest(BaseModel):

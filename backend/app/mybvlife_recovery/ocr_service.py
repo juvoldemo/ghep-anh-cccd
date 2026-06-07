@@ -1,8 +1,14 @@
 import functools
+import logging
+import os
 import re
+import shutil
+import time
 import unicodedata
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
+
+logger = logging.getLogger(__name__)
 
 
 FULL_NAME_MISSING_WARNING = "Họ tên có thể bị thiếu, vui lòng kiểm tra lại"
@@ -100,10 +106,30 @@ class OcrToken(TypedDict):
 
 class OcrResult(TypedDict):
     ok: bool
-    source: Literal["qr", "ocr"]
+    source: Literal["qr", "ocr", "cropped_field_ocr"]
     data: ParsedData
     warnings: list[str]
     message: str | None
+    confidence: NotRequired[dict[str, float]]
+    method: NotRequired[Literal["qr", "cropped_field_ocr", "full_image_fallback_ocr"]]
+    processing_time_ms: NotRequired[int]
+    debug_timing: NotRequired[dict[str, int]]
+
+
+class FieldOcrResult(TypedDict):
+    text: str
+    confidence: float
+
+
+ZALO_CARD_CROP = {"x1": 0.04, "y1": 0.18, "x2": 0.96, "y2": 0.68}
+ZALO_FIELD_CROPS = {
+    "identity_no": {"x1": 0.055, "y1": 0.168, "x2": 0.52, "y2": 0.200},
+    "old_id_no": {"x1": 0.055, "y1": 0.236, "x2": 0.46, "y2": 0.260},
+    "full_name": {"x1": 0.055, "y1": 0.296, "x2": 0.68, "y2": 0.320},
+}
+MAX_OCR_IMAGE_WIDTH = 900
+LOW_CONFIDENCE_WARNING = "OCR chá»‰ há»— trá»£ Ä‘iá»n nhanh. Vui lÃ²ng kiá»ƒm tra ká»¹ há» tÃªn, sá»‘ CCCD vÃ  sá»‘ CMND trÆ°á»›c khi gá»­i."
+NAME_UNCERTAIN_WARNING = "Há» tÃªn cÃ³ thá»ƒ chÆ°a chÃ­nh xÃ¡c dáº¥u tiáº¿ng Viá»‡t, vui lÃ²ng kiá»ƒm tra láº¡i."
 
 
 def _strip_accents(value: str) -> str:
@@ -118,6 +144,11 @@ def _clean_spaces(value: str) -> str:
 
 def _digits_only(value: str) -> str:
     return re.sub(r"\D", "", value or "")
+
+
+def _normalize_ocr_number(value: str) -> str:
+    replacements = str.maketrans({"O": "0", "o": "0", "I": "1", "l": "1", "|": "1", "S": "5", "s": "5", "B": "8"})
+    return _digits_only((value or "").translate(replacements))
 
 
 def _clean_name(value: str) -> str:
@@ -169,6 +200,23 @@ def _get_easyocr_reader() -> Any:
     return easyocr.Reader(["vi", "en"], gpu=False)
 
 
+@functools.lru_cache(maxsize=1)
+def _get_paddleocr_reader() -> Any:
+    from paddleocr import PaddleOCR  # type: ignore
+
+    try:
+        return PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False, lang="vi")
+    except TypeError:
+        return PaddleOCR(use_angle_cls=False, lang="vi", show_log=False)
+
+
+def warm_up_ocr_engines() -> None:
+    try:
+        _get_paddleocr_reader()
+    except Exception as exc:
+        logger.warning("Could not warm up PaddleOCR; EasyOCR fallback may be used: %s", exc)
+
+
 def _token_from_box(text: str, box: Any) -> OcrToken | None:
     try:
         xs = [float(point[0]) for point in box]
@@ -215,10 +263,13 @@ def _extract_easyocr(image_path: Path) -> list[str]:
 
 
 def _extract_paddleocr(image_path: Path) -> list[str]:
-    from paddleocr import PaddleOCR  # type: ignore
-
-    ocr = PaddleOCR(use_angle_cls=True, lang="vi", show_log=False)
-    result = ocr.ocr(str(image_path), cls=True)
+    ocr = _get_paddleocr_reader()
+    try:
+        result = ocr.predict(str(image_path))
+    except AttributeError:
+        result = ocr.ocr(str(image_path), cls=False)
+    if result and isinstance(result[0], dict):
+        return [_clean_spaces(str(text)) for page in result for text in (page.get("rec_texts") or []) if _clean_spaces(str(text))]
     lines: list[str] = []
     for page in result or []:
         for item in page or []:
@@ -229,11 +280,29 @@ def _extract_paddleocr(image_path: Path) -> list[str]:
 
 
 def _extract_paddleocr_tokens(image_path: Path) -> list[OcrToken]:
-    from paddleocr import PaddleOCR  # type: ignore
+    ocr = _get_paddleocr_reader()
+    try:
+        result = ocr.predict(str(image_path))
+    except AttributeError:
+        result = ocr.ocr(str(image_path), cls=False)
+    return _paddle_result_to_tokens(result)
 
-    ocr = PaddleOCR(use_angle_cls=True, lang="vi", show_log=False)
-    result = ocr.ocr(str(image_path), cls=True)
+
+def _paddle_result_to_tokens(result: Any) -> list[OcrToken]:
     tokens: list[OcrToken] = []
+    if result and isinstance(result[0], dict):
+        for page in result:
+            texts = page.get("rec_texts") or []
+            boxes = page.get("rec_polys") or page.get("dt_polys") or []
+            for text, box in zip(texts, boxes):
+                cleaned = _clean_spaces(str(text))
+                if not cleaned:
+                    continue
+                token = _token_from_box(cleaned, box)
+                if token:
+                    tokens.append(token)
+        return tokens
+
     for page in result or []:
         for item in page or []:
             if not item or len(item) < 2:
@@ -247,6 +316,62 @@ def _extract_paddleocr_tokens(image_path: Path) -> list[OcrToken]:
             if token:
                 tokens.append(token)
     return tokens
+
+
+def _extract_paddleocr_field(image: Any) -> FieldOcrResult:
+    ocr = _get_paddleocr_reader()
+    try:
+        result = ocr.predict(image)
+    except AttributeError:
+        result = ocr.ocr(image, cls=False)
+    texts: list[str] = []
+    confidences: list[float] = []
+    if result and isinstance(result[0], dict):
+        for page in result:
+            for text, confidence in zip(page.get("rec_texts") or [], page.get("rec_scores") or []):
+                cleaned = _clean_spaces(str(text))
+                if cleaned:
+                    texts.append(cleaned)
+                    try:
+                        confidences.append(float(confidence))
+                    except Exception:
+                        pass
+        return {"text": _clean_spaces(" ".join(texts)), "confidence": sum(confidences) / len(confidences) if confidences else 0.0}
+
+    for page in result or []:
+        for item in page or []:
+            if not item or len(item) < 2:
+                continue
+            text = item[1][0] if item[1] and len(item[1]) > 0 else ""
+            confidence = item[1][1] if item[1] and len(item[1]) > 1 else 0.0
+            cleaned = _clean_spaces(str(text))
+            if cleaned:
+                texts.append(cleaned)
+                try:
+                    confidences.append(float(confidence))
+                except Exception:
+                    pass
+    return {"text": _clean_spaces(" ".join(texts)), "confidence": sum(confidences) / len(confidences) if confidences else 0.0}
+
+
+def _extract_easyocr_field(image: Any) -> FieldOcrResult:
+    reader = _get_easyocr_reader()
+    result = reader.readtext(image, detail=1, paragraph=False, decoder="greedy", width_ths=1.0, text_threshold=0.45)
+    texts: list[str] = []
+    confidences: list[float] = []
+    for item in result or []:
+        try:
+            _box, text, confidence = item
+        except Exception:
+            continue
+        cleaned = _clean_spaces(str(text))
+        if cleaned:
+            texts.append(cleaned)
+            try:
+                confidences.append(float(confidence))
+            except Exception:
+                pass
+    return {"text": _clean_spaces(" ".join(texts)), "confidence": sum(confidences) / len(confidences) if confidences else 0.0}
 
 
 def _read_text(image_path: Path) -> list[str]:
@@ -363,6 +488,259 @@ def _build_ocr_image_variants(image_path: Path) -> list[Any]:
         add_variant(sharpened)
 
     return variants[:6]
+
+
+def _ratio_crop(image: Any, crop_config: dict[str, float], expand: float = 0.0) -> Any:
+    height, width = image.shape[:2]
+    x1 = max(0, int((crop_config["x1"] - expand) * width))
+    y1 = max(0, int((crop_config["y1"] - expand) * height))
+    x2 = min(width, int((crop_config["x2"] + expand) * width))
+    y2 = min(height, int((crop_config["y2"] + expand) * height))
+    return image[y1:y2, x1:x2]
+
+
+def _resize_for_fast_ocr(image: Any) -> Any:
+    import cv2  # type: ignore
+
+    height, width = image.shape[:2]
+    if not width or width <= MAX_OCR_IMAGE_WIDTH:
+        return image
+    scale = MAX_OCR_IMAGE_WIDTH / width
+    return cv2.resize(image, (MAX_OCR_IMAGE_WIDTH, max(1, int(height * scale))), interpolation=cv2.INTER_AREA)
+
+
+def detect_zalo_cccd_layout(image: Any) -> Any:
+    try:
+        import cv2  # type: ignore
+    except Exception:
+        return _ratio_crop(image, ZALO_CARD_CROP)
+
+    height, width = image.shape[:2]
+    if not height or not width:
+        return image
+
+    search = image[int(height * 0.12) : int(height * 0.78), int(width * 0.02) : int(width * 0.98)]
+    gray = cv2.cvtColor(search, cv2.COLOR_BGR2GRAY) if len(search.shape) == 3 else search
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    _threshold, binary = cv2.threshold(blurred, 185, 255, cv2.THRESH_BINARY)
+    contours, _hierarchy = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    candidates: list[tuple[int, int, int, int, float]] = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        area = w * h
+        if area < width * height * 0.08:
+            continue
+        if w < width * 0.55 or h < height * 0.20:
+            continue
+        candidates.append((x, y, w, h, area))
+
+    if not candidates:
+        return _ratio_crop(image, ZALO_CARD_CROP)
+
+    x, y, w, h, _area = sorted(candidates, key=lambda item: item[4], reverse=True)[0]
+    x += int(width * 0.02)
+    y += int(height * 0.12)
+    pad_x = int(width * 0.015)
+    pad_y = int(height * 0.01)
+    return image[max(0, y - pad_y) : min(height, y + h + pad_y), max(0, x - pad_x) : min(width, x + w + pad_x)]
+
+
+def crop_zalo_fields(image: Any, expand: float = 0.0) -> dict[str, Any]:
+    return {
+        "identity_no_crop": _ratio_crop(image, ZALO_FIELD_CROPS["identity_no"], expand),
+        "old_id_no_crop": _ratio_crop(image, ZALO_FIELD_CROPS["old_id_no"], expand),
+        "full_name_crop": _ratio_crop(image, ZALO_FIELD_CROPS["full_name"], expand),
+    }
+
+
+def preprocess_crop_for_ocr(crop: Any) -> Any:
+    import cv2  # type: ignore
+
+    if crop is None or not getattr(crop, "size", 0):
+        return crop
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if len(crop.shape) == 3 else crop
+    resized = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+    enhanced = cv2.convertScaleAbs(resized, alpha=1.18, beta=4)
+    return cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
+
+
+def _strip_field_label(value: str) -> str:
+    labels = (
+        "ho va ten",
+        "ho ten",
+        "full name",
+        "so cccd",
+        "cccd",
+        "so cmnd",
+        "cmnd",
+    )
+    cleaned = _clean_spaces(value)
+    normalized = _strip_accents(cleaned)
+    for label in labels:
+        position = normalized.find(label)
+        if position >= 0:
+            cleaned = cleaned[position + len(label) :].lstrip(" :,-â€“â€”")
+            normalized = _strip_accents(cleaned)
+    return _clean_spaces(cleaned)
+
+
+def _repair_common_name_ocr(value: str) -> str:
+    words = _clean_spaces(value).split()
+    repaired: list[str] = []
+    for word in words:
+        key = _normalized_word(word)
+        if key in {"nguyn", "nguyen"}:
+            repaired.append(_match_name_case(word, "Nguyễn"))
+        elif key in {"th", "thi"}:
+            repaired.append(_match_name_case(word, "Thị"))
+        else:
+            repaired.append(word)
+    return _clean_spaces(" ".join(repaired))
+
+
+def _normalize_field_text(raw_text: str, field_type: Literal["identity_no", "old_id_no", "full_name"]) -> str:
+    if field_type == "identity_no":
+        digits = _normalize_ocr_number(_strip_field_label(raw_text))
+        return digits if len(digits) == 12 else digits[:12]
+    if field_type == "old_id_no":
+        digits = _normalize_ocr_number(_strip_field_label(raw_text))
+        return digits if len(digits) in (0, 9, 12) else digits[:12]
+    return _clean_name(_repair_common_name_ocr(_strip_field_label(raw_text)))
+
+
+def ocr_single_field(crop: Any, field_type: Literal["identity_no", "old_id_no", "full_name"]) -> FieldOcrResult:
+    prepared = preprocess_crop_for_ocr(crop)
+    best: FieldOcrResult = {"text": "", "confidence": 0.0}
+
+    try:
+        best = _extract_paddleocr_field(prepared)
+    except Exception:
+        pass
+
+    if not best["text"]:
+        try:
+            best = _extract_easyocr_field(prepared)
+        except Exception:
+            pass
+
+    return {"text": _normalize_field_text(best["text"], field_type), "confidence": round(float(best["confidence"] or 0.0), 4)}
+
+
+def _field_is_valid(field_type: Literal["identity_no", "old_id_no", "full_name"], result: FieldOcrResult) -> bool:
+    text = result["text"]
+    if field_type == "identity_no":
+        return len(text) == 12
+    if field_type == "old_id_no":
+        return not text or len(text) in (9, 12)
+    return _has_usable_name(text)
+
+
+def _has_usable_name(value: str) -> bool:
+    cleaned = _clean_spaces(value)
+    normalized = _strip_accents(cleaned)
+    return bool(cleaned and not re.search(r"\d", cleaned) and not _is_any_stop_label(cleaned) and not any(keyword in normalized for keyword in INVALID_NAME_KEYWORDS))
+
+
+def _has_required_cropped_data(data: ParsedData) -> bool:
+    return bool(len(data["cccd"]) == 12 and _has_usable_name(data["fullName"]))
+
+
+def _save_debug_crops(crops: dict[str, Any], debug_dir: Path = Path("tmp_debug")) -> None:
+    if os.getenv("SHOW_OCR_DEBUG", "").lower() not in {"1", "true", "yes"}:
+        return
+    try:
+        import cv2  # type: ignore
+
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        for name, crop in crops.items():
+            cv2.imwrite(str(debug_dir / f"{name}.png"), crop)
+    except Exception:
+        pass
+
+
+def _read_cropped_fields(image_path: Path) -> tuple[ParsedData, dict[str, float], list[str], bool, dict[str, int]]:
+    import cv2  # type: ignore
+
+    timing = {
+        "resize_time_ms": 0,
+        "crop_time_ms": 0,
+        "ocr_cccd_time_ms": 0,
+        "ocr_cmnd_time_ms": 0,
+        "ocr_name_time_ms": 0,
+        "fallback_time_ms": 0,
+    }
+    image = cv2.imread(str(image_path))
+    if image is None:
+        return _empty_data(), {"fullName": 0.0, "cccd": 0.0, "cmnd": 0.0}, ["KhÃ´ng thá»ƒ má»Ÿ áº£nh Ä‘á»ƒ OCR."], False
+
+    started = time.perf_counter()
+    image = _resize_for_fast_ocr(image)
+    timing["resize_time_ms"] = round((time.perf_counter() - started) * 1000)
+
+    started = time.perf_counter()
+    crops = crop_zalo_fields(image)
+    timing["crop_time_ms"] = round((time.perf_counter() - started) * 1000)
+    if os.getenv("SHOW_OCR_DEBUG", "").lower() in {"1", "true", "yes"}:
+        shutil.rmtree("tmp_debug", ignore_errors=True)
+    _save_debug_crops(crops)
+    started = time.perf_counter()
+    identity_result = ocr_single_field(crops["identity_no_crop"], "identity_no")
+    timing["ocr_cccd_time_ms"] = round((time.perf_counter() - started) * 1000)
+
+    started = time.perf_counter()
+    old_id_result = ocr_single_field(crops["old_id_no_crop"], "old_id_no")
+    timing["ocr_cmnd_time_ms"] = round((time.perf_counter() - started) * 1000)
+
+    started = time.perf_counter()
+    name_result = ocr_single_field(crops["full_name_crop"], "full_name")
+    timing["ocr_name_time_ms"] = round((time.perf_counter() - started) * 1000)
+
+    results = {
+        "identity_no": identity_result,
+        "old_id_no": old_id_result,
+        "full_name": name_result,
+    }
+
+    missing_identity = not _field_is_valid("identity_no", results["identity_no"])
+    missing_name = not _field_is_valid("full_name", results["full_name"])
+    if missing_identity or missing_name:
+        started = time.perf_counter()
+        expanded_crops = crop_zalo_fields(image, expand=0.05)
+        timing["crop_time_ms"] += round((time.perf_counter() - started) * 1000)
+        _save_debug_crops({f"expanded_{key}": value for key, value in expanded_crops.items()})
+        if missing_identity:
+            started = time.perf_counter()
+            retry_identity = ocr_single_field(expanded_crops["identity_no_crop"], "identity_no")
+            timing["ocr_cccd_time_ms"] += round((time.perf_counter() - started) * 1000)
+            if _field_is_valid("identity_no", retry_identity) or retry_identity["confidence"] > results["identity_no"]["confidence"]:
+                results["identity_no"] = retry_identity
+        if missing_name:
+            started = time.perf_counter()
+            retry_name = ocr_single_field(expanded_crops["full_name_crop"], "full_name")
+            timing["ocr_name_time_ms"] += round((time.perf_counter() - started) * 1000)
+            if _field_is_valid("full_name", retry_name) or retry_name["confidence"] > results["full_name"]["confidence"]:
+                results["full_name"] = retry_name
+
+    data: ParsedData = {
+        "fullName": results["full_name"]["text"],
+        "cccd": results["identity_no"]["text"] if len(results["identity_no"]["text"]) == 12 else "",
+        "cmnd": results["old_id_no"]["text"] if len(results["old_id_no"]["text"]) in (9, 12) else "",
+    }
+    confidence = {
+        "fullName": results["full_name"]["confidence"],
+        "cccd": results["identity_no"]["confidence"],
+        "cmnd": results["old_id_no"]["confidence"] if data["cmnd"] else 0.0,
+    }
+
+    warnings = _validate_data(data)
+    if data["fullName"] and confidence["fullName"] < 0.9:
+        warnings.append(NAME_UNCERTAIN_WARNING)
+    if any(value and value < 0.75 for value in confidence.values()):
+        warnings.append(LOW_CONFIDENCE_WARNING)
+
+    logger.debug("MyBVLife cropped OCR timing: %s", timing)
+    return data, confidence, warnings, _has_required_cropped_data(data), timing
 
 
 def _decode_qr_with_opencv(image_path: Path) -> str:
@@ -706,30 +1084,78 @@ def _has_minimum_data(data: ParsedData) -> bool:
 
 
 def ocr_cccd(image_path: Path) -> OcrResult:
+    request_started = time.perf_counter()
+    debug_timing = {
+        "resize_time_ms": 0,
+        "crop_time_ms": 0,
+        "ocr_cccd_time_ms": 0,
+        "ocr_cmnd_time_ms": 0,
+        "ocr_name_time_ms": 0,
+        "fallback_time_ms": 0,
+    }
     qr_text = _decode_qr_with_opencv(image_path)
     qr_data = _parse_cccd_qr(qr_text)
 
     if _has_minimum_data(qr_data):
         warnings = _validate_data(qr_data)
+        processing_time_ms = round((time.perf_counter() - request_started) * 1000)
         return {
             "ok": True,
             "source": "qr",
             "data": qr_data,
             "warnings": warnings,
             "message": None,
+            "confidence": {"fullName": 1.0, "cccd": 1.0, "cmnd": 1.0 if qr_data["cmnd"] else 0.0},
+            "method": "qr",
+            "processing_time_ms": processing_time_ms,
+            "debug_timing": debug_timing,
         }
 
+    try:
+        cropped_data, cropped_confidence, cropped_warnings, cropped_ok, debug_timing = _read_cropped_fields(image_path)
+        if cropped_ok:
+            processing_time_ms = round((time.perf_counter() - request_started) * 1000)
+            logger.debug("MyBVLife OCR finished with cropped fields in %sms; timing=%s", processing_time_ms, debug_timing)
+            return {
+                "ok": True,
+                "source": "cropped_field_ocr",
+                "data": cropped_data,
+                "warnings": cropped_warnings,
+                "message": None,
+                "confidence": cropped_confidence,
+                "method": "cropped_field_ocr",
+                "processing_time_ms": processing_time_ms,
+                "debug_timing": debug_timing,
+            }
+    except Exception:
+        cropped_data = _empty_data()
+        cropped_confidence = {"fullName": 0.0, "cccd": 0.0, "cmnd": 0.0}
+        cropped_warnings = []
+
+    fallback_started = time.perf_counter()
     lines, tokens = _read_text_and_tokens(image_path)
+    debug_timing["fallback_time_ms"] = round((time.perf_counter() - fallback_started) * 1000)
     ocr_data = _parse_ocr_data(lines, tokens)
     warnings = _validate_data(ocr_data)
+    processing_time_ms = round((time.perf_counter() - request_started) * 1000)
+    logger.debug("MyBVLife OCR used full-image fallback in %sms; timing=%s", processing_time_ms, debug_timing)
 
     if not _has_minimum_data(ocr_data):
+        merged_data = {
+            "fullName": ocr_data["fullName"] or cropped_data["fullName"],
+            "cccd": ocr_data["cccd"] or cropped_data["cccd"],
+            "cmnd": ocr_data["cmnd"] or cropped_data["cmnd"],
+        }
         return {
             "ok": False,
             "source": "ocr",
-            "data": ocr_data,
-            "warnings": warnings,
+            "data": merged_data,
+            "warnings": list(dict.fromkeys([*cropped_warnings, *warnings])),
             "message": READ_FAILED_MESSAGE,
+            "confidence": cropped_confidence,
+            "method": "full_image_fallback_ocr",
+            "processing_time_ms": processing_time_ms,
+            "debug_timing": debug_timing,
         }
 
     return {
@@ -738,4 +1164,8 @@ def ocr_cccd(image_path: Path) -> OcrResult:
         "data": ocr_data,
         "warnings": warnings,
         "message": None,
+        "confidence": {"fullName": 0.75, "cccd": 0.75, "cmnd": 0.75 if ocr_data["cmnd"] else 0.0},
+        "method": "full_image_fallback_ocr",
+        "processing_time_ms": processing_time_ms,
+        "debug_timing": debug_timing,
     }

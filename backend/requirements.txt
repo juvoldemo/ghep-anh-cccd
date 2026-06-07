@@ -3,7 +3,8 @@ uvicorn[standard]==0.34.3
 python-multipart==0.0.20
 httpx==0.28.1
 pydantic==2.11.5
-opencv-python-headless==4.13.0.92
-# OCR engine. PaddleOCR is still auto-detected first if installed.
+opencv-python-headless==4.10.0.84
+# OCR engine. Cropped MyBVLife OCR prefers PaddleOCR and keeps EasyOCR as fallback.
 easyocr==1.7.2
-# paddleocr==2.9.1
+paddleocr==3.6.0
+paddlepaddle==3.2.2

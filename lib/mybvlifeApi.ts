@@ -1,6 +1,6 @@
 export type OcrResult = {
   ok: boolean;
-  source: "ai_vision" | "qr" | "ocr";
+  source: "ai_vision" | "qr" | "ocr" | "cropped_field_ocr";
   data: {
     fullName: string;
     cccd: string;
@@ -8,6 +8,24 @@ export type OcrResult = {
   };
   warnings: string[];
   message: string | null;
+  confidence?: {
+    fullName?: number;
+    cccd?: number;
+    cmnd?: number;
+  };
+  method?: "ai_vision" | "qr" | "cropped_field_ocr" | "full_image_fallback_ocr";
+  processing_time_ms?: number;
+  debug_timing?: {
+    resize_time_ms?: number;
+    crop_time_ms?: number;
+    ocr_cccd_time_ms?: number;
+    ocr_cmnd_time_ms?: number;
+    ocr_name_time_ms?: number;
+    fallback_time_ms?: number;
+  };
+  full_name?: string;
+  identity_no?: string;
+  old_id_no?: string;
 };
 
 export type RecoveryResult = {

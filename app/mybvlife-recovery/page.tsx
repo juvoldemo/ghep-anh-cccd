@@ -169,14 +169,19 @@ export default function MyBVLifeRecoveryPage() {
     resetRecoveryState();
     try {
       const response = await ocrCccd(file);
-      const ocrFullName = normalizeNameInput(response.data.fullName || "");
+      const responseData = {
+        fullName: response.data.fullName || response.full_name || "",
+        cccd: response.data.cccd || response.identity_no || "",
+        cmnd: response.data.cmnd || response.old_id_no || ""
+      };
+      const ocrFullName = normalizeNameInput(responseData.fullName || "");
       const hasBadName = looksLikeBadOcrName(ocrFullName);
       setFullName(hasBadName ? "" : ocrFullName);
-      setIdentityNo(response.data.cccd || "");
-      setOldIdentityNo(response.data.cmnd || "");
+      setIdentityNo(responseData.cccd || "");
+      setOldIdentityNo(responseData.cmnd || "");
       setWarnings(hasBadName ? [...(response.warnings || []), "Họ tên OCR có dấu hiệu đọc nhầm, vui lòng nhập lại đúng họ tên."] : response.warnings || []);
 
-      const hasAnyData = Boolean(response.data.fullName || response.data.cccd || response.data.cmnd);
+      const hasAnyData = Boolean(responseData.fullName || responseData.cccd || responseData.cmnd);
       setOcrDone(response.ok || hasAnyData);
       if (!response.ok) {
         setError(response.message || "Không đọc được thông tin CCCD. Vui lòng thử ảnh rõ hơn.");
@@ -294,6 +299,7 @@ export default function MyBVLifeRecoveryPage() {
           </button>
           {expandedStep === "review" ? (
           <>
+          <p className="recoveryNote">OCR chỉ hỗ trợ điền nhanh. Vui lòng kiểm tra kỹ họ tên, số CCCD và số CMND trước khi gửi.</p>
           {warnings.length ? <div className="warning">{warnings.join(" ")}</div> : null}
           {badOcrName ? <div className="warning">Họ tên OCR có dấu hiệu đọc nhầm, vui lòng nhập lại đúng họ tên.</div> : null}
           <label className="field">

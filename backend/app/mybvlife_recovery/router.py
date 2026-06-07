@@ -4,8 +4,8 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
-from app.mybvlife_recovery.ai_vision_ocr import ocr_cccd_with_ai_vision
 from app.mybvlife_recovery.config import MYBVLIFE_RECOVERY_ENABLED, RECOVERY_RATE_LIMIT_PER_MINUTE
+from app.mybvlife_recovery.ocr_service import ocr_cccd
 from app.mybvlife_recovery.recovery_service import recover_mybvlife
 from app.mybvlife_recovery.schemas import OcrResponse, RecoveryRequest, RecoveryResponse
 from app.mybvlife_recovery.security_utils import mask_identity_no
@@ -59,7 +59,14 @@ async def _save_upload_temporarily(file: UploadFile) -> Path:
 async def ai_ocr_endpoint(file: UploadFile = File(...)):
     temp_path = await _save_upload_temporarily(file)
     try:
-        return await ocr_cccd_with_ai_vision(temp_path, file.content_type or "image/jpeg")
+        result = ocr_cccd(temp_path)
+        data = result["data"]
+        return {
+            **result,
+            "full_name": data["fullName"],
+            "identity_no": data["cccd"],
+            "old_id_no": data["cmnd"],
+        }
     finally:
         await file.close()
         temp_path.unlink(missing_ok=True)
@@ -69,7 +76,14 @@ async def ai_ocr_endpoint(file: UploadFile = File(...)):
 async def legacy_ocr_endpoint(file: UploadFile = File(...)):
     temp_path = await _save_upload_temporarily(file)
     try:
-        return await ocr_cccd_with_ai_vision(temp_path, file.content_type or "image/jpeg")
+        result = ocr_cccd(temp_path)
+        data = result["data"]
+        return {
+            **result,
+            "full_name": data["fullName"],
+            "identity_no": data["cccd"],
+            "old_id_no": data["cmnd"],
+        }
     finally:
         await file.close()
         temp_path.unlink(missing_ok=True)

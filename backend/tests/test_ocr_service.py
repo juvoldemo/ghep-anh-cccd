@@ -1,9 +1,16 @@
 import unittest
 
-from app.mybvlife_recovery.ocr_service import _has_minimum_data, _parse_cccd_qr, _parse_ocr_data, _parse_ocr_lines, _validate_data
+from app.mybvlife_recovery.ocr_service import _has_minimum_data, _normalize_field_text, _parse_cccd_qr, _parse_ocr_data, _parse_ocr_lines, _validate_data
 
 
 class CccdParsingTest(unittest.TestCase):
+    def test_field_ocr_normalizes_common_digit_misreads(self) -> None:
+        self.assertEqual(_normalize_field_text("O561 72O1 O4O1", "identity_no"), "056172010401")
+        self.assertEqual(_normalize_field_text("225 214 726", "old_id_no"), "225214726")
+
+    def test_field_ocr_strips_name_label_without_changing_accents(self) -> None:
+        self.assertEqual(_normalize_field_text("Ho va ten Nguyá»…n Thá»‹ ThÃ¹y Trang", "full_name"), "Nguyá»…n Thá»‹ ThÃ¹y Trang")
+
     def test_parse_zalo_labeled_lines_keeps_full_vietnamese_name(self) -> None:
         data = _parse_ocr_lines(
             [
