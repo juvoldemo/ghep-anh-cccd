@@ -8,8 +8,7 @@ const allowedTypes = new Set(["image/jpeg", "image/png"]);
 const backendTimeoutMs = 52_000;
 
 function getBackendOcrUrl() {
-  const base = (process.env.MYBVLIFE_API_BASE || process.env.NEXT_PUBLIC_MYBVLIFE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
-  return `${base}/api/ocr-cccd`;
+  return "https://ghep-anh-cccd.onrender.com/api/ocr-cccd";
 }
 
 export async function POST(request: NextRequest) {

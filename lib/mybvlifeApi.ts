@@ -39,10 +39,11 @@ export type RecoveryResult = {
 
 const myBVLifeValidateUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPasswordValid";
 const myBVLifeConfirmUrl = "https://mybvlapi.baovietnhantho.com.vn/eposws/api/user/forgotPassword";
-const ocrTimeoutMs = 55_000;
+const productionOcrApiBase = "https://ghep-anh-cccd.onrender.com";
+const ocrTimeoutMs = 180_000;
 
 function getOcrUrl() {
-  return "/api/mybvlife/ocr";
+  return `${productionOcrApiBase}/api/ocr-cccd`;
 }
 
 async function readJson<T>(response: Response): Promise<T> {
